@@ -1,6 +1,16 @@
-# update_ddns_zone
+---
+created: 2026-02-12
+authors: ["Jeffrey Carpenter", "myemail"]
+tags:
+  - openwrt
+  - ujail
+  - dnsmasq
+  - script
+  - ddns
+  - DNSMASQ_DOMAIN
+---
 
-OpenWRT ujail dnsmasq script integration to provide DDNS updates per configured domain
+# update_ddns_zone
 
 *...* WIP
 
