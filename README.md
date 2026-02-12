@@ -12,7 +12,7 @@ tags:
 
 # update_ddns_zone
 
-*...* WIP
+*WIP* ...
 
 ## usage
 
