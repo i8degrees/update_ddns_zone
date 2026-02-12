@@ -1,7 +1,9 @@
+---
+---
 
 # BSD 3-Clause License
 
-Copyright (c) 2025, 2026 Jeffrey Carpenter <myemail>
+COPYRIGHT (c) 2025, 2026 JEFFREY CARPENTER <1329364+i8degrees@users.noreply.github.com>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
