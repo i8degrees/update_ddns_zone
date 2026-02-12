@@ -1,0 +1,39 @@
+# config/app.yml
+#
+# one or more nameservers must be specified for script operation; leaving it
+# un-initialized will effectively terminate the core script functionality
+# beyond early init
+#
+# tsig_keys are optional
+#
+# there must be at least one of `forward-zones` `reverse-zones`
+#
+# not supplying one (or more) reverse-zones implies skipping
+# PTR RR records changes in the main script loop
+#
+# not supplying one (or more) forward-zones implies skipping
+# RR records changes in the main script loop
+---
+
+version: 1
+
+update_ddns_zone:
+  - nameservers:
+      ip_addr: "192.168.12.16"
+      port: 5300
+  - nameservers:
+      ip_addr: "192.168.12.16"
+      port: 5300
+  - tsig_keys:
+    name: sw2-axfr
+    algo: hmac-sha256
+    secret: "xxx"
+  - forward-zones:
+      name: home.arpa
+      name: ha.home.arpa
+  - reverse-zones:
+      name: "12.168.192.in-addr.arpa"
+      tsig_key: sw2-axfr
+      name: "14.168.192.in-addr.arpa"
+      tsig_key: sw2-axfr
+
