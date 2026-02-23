@@ -1,0 +1,69 @@
+# config/app.yml
+#
+# one or more nameservers must be specified for script operation; leaving it
+# un-initialized will effectively terminate the core script functionality
+# beyond early init
+#
+# tsig_keys are optional
+#
+# there must be at least one of `forward-zones` `reverse-zones`
+#
+# not supplying one (or more) reverse-zones implies skipping
+# PTR RR records changes in the main script loop
+#
+# not supplying one (or more) forward-zones implies skipping
+# RR records changes in the main script loop
+---
+
+version: 1
+
+pdns_api_version: "4.8.4"
+pdns_api_proto: "http" # (http|https)
+# IMPORTANT(JEFF): This field must be set when the protocol is https.
+# NOTE(JEFF): (None|path|PEM certificate)
+pdns_api_certificate: None
+pdns_api_host: "ns4.home" # hostname or IP address
+pdns_api_port: 8081
+pdns_api_key: "dnsFuckboobsYeah"
+pdns_api_ttl: 60
+forward-ddns:
+  ddns-domains:
+    - name: home.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+    - name: ha.home.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+reverse-ddns:
+  ddns-domains:
+    - name: 12.168.192.in-addr.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+    - name: 14.168.192.in-addr.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+tsig-keys:
+  - name: sw2-axfr
+    algorithm: hmac-sha256
+    secret: xxx
+  - name: tsig-dummy-key
+    algorithm: md5
+    secret: xxx
+
+
