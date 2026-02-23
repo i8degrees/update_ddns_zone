@@ -1,0 +1,62 @@
+
+[build-system]
+requires = [
+  "setuptools>=61.0"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+requires-python = ">=3.11"
+name = "update_ddns_zone"
+version = "1.0.0"
+description = "DDNS DHCP updates with integration into dnsmasq"
+readme = "README.md"
+#license = "MIT"
+license = { file = "LICENSE.md" }
+authors = [{ name = "Jeffrey Carpenter", email = "1329364+i8degrees@users.noreply.github.com" }]
+keywords = [ "ddns", "dhcp", "dnsmasq", "powerdns", "pdns" ]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+  "python-dotenv >= 1.2.1",
+  "python-dotenv[cli] >= 1.2.1",
+  "urllib3 >= 2.6.3",
+  "pyyaml >= 0.2.5"
+]
+
+[project.optional-dependencies]
+dev = [
+  "validate-pyproject[all]",
+  "mypy==1.19.1",
+  # !! TODO Verify whether or not we still need this dep
+  "types-requests==2.32.4.20260107",
+  "typing_extensions==4.15.0"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/i8degrees/"
+"Bug Reports" = "https://github.com/i8degrees/"
+"Source" = "https://github.com/i8degrees/"
+"Documentation" = "https://github.com/i8degrees/"
+
+[project.scripts]
+#ddns_update = "ddns_update.src.app.__main__:main"
+ddns_update = "app.__main__:main"
+#build = "build:main"
+#lint = "lint:main"
+#test = "test:main"
+#test = ["coverage"]
+
+#[tool.setuptools]
+#py-modules = ["build", "analyze", "lint"]
+
