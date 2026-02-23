@@ -16,4 +16,19 @@ tags:
 
 ## usage
 
+```shell
+pip install update_ddns_zone-1.0.0-py3-none-any.whl
+pipx install update_ddns_zone-1.0.0-py3-none-any.whl
+```
+
+### development
+
+```shell
+python3 -m venv .venv
+python3 -m build
+pip install -r requirements.txt
+pip install -e .
+```
+
 ## Foot Notes
+
