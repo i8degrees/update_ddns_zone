@@ -38,6 +38,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  # ?? Is this dependency necessary to include for `python3 -m build`
+  "setuptools >= 61.0",
   "validate-pyproject[all]",
   "mypy==1.19.1",
   # !! TODO Verify whether or not we still need this dep
@@ -63,6 +65,5 @@ test = "test.__main__:main"
 #lint = "lint:main"
 
 #[tool.setuptools]
-#py-modules = ["build", "analyze", "lint"]
 #py-modules = ["build", "deploy", "test", "ddns_update"]
 
