@@ -28,3 +28,7 @@ class AppConfig:
     def dump(self) -> dict:
         return self.app
 
+    # ?? Impl? If so, we ought to check for `type(self.app) == dict`, right?
+    #def get(self, value):
+        #return self.app.get(value)
+
