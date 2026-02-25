@@ -1,30 +1,48 @@
 #!/bin/sh
+# shellcheck shell=sh
 #
-#
+# TODO(JEFF): This script is a placeholder until I get around to replacing it.
 #
 
 #DEPLOY_PACKAGES=(
   #"config/app.yml"
   #"dist/update_ddns_zone-1.0.0.tar.gz"
 #)
-DEPLOY_PACKAGE="dist/update_ddns_zone-1.0.0.tar.gz"
-DEPLOY_USER=root
-DEPLOY_HOST=sw2-gw.lan
-DEPLOY_PATH=/root
+DEPLOY_PACKAGE_FILENAME=update_ddns_zone-1.0.0.tar.gz # package filename
+DEPLOY_PACKAGE_PATH="dist/${DEPLOY_PACKAGE_FILENAME}" # local path
+DEPLOY_PACKAGE_DEST="/tmp" # remote path
+
+DEPLOY_CONFIG="config/app.yml" # local path
+DEPLOY_CONFIG_DEST="/usr/local/etc/app.yml" # remote path
+
+DEPLOY_USER=root # remote user
+DEPLOY_HOST=sw2-gw.lan # remote host
+SSH_HOST_STR="${DEPLOY_USER}@${DEPLOY_HOST}"
 # TODO(JEFF): Prefer rsync?
-DEPLOY_CMD=scp
-DEPLOY_RUN_CMD=ssh
+DEPLOY_CMD=scp # local
+DEPLOY_RUN_CMD=ssh # local
 
 # 1a. Transfer dist package to deployment host
-$DEPLOY_CMD -O "${DEPLOY_PACKAGE}" root@${DEPLOY_HOST}:${DEPLOY_PATH}
+if ! $DEPLOY_CMD -O "${DEPLOY_PACKAGE_PATH}" ${SSH_HOST_STR}:${DEPLOY_PACKAGE_DEST}/.; then
+  echo "CRIT: Failed to transfer ${DEPLOY_PACKAGE_PATH} at ${SSH_HOST_STR} - halting!"
+  echo
+  exit 1
+fi
 
 # 1b. Copy configuration file
-$DEPLOY_CMD -O config/app.yml root@${DEPLOY_HOST}:/usr/local/etc/app.yml
+if ! $DEPLOY_CMD -O ${DEPLOY_CONFIG} ${SSH_HOST_STR}:${DEPLOY_CONFIG_DEST}; then
+  echo "CRIT: Failed to transfer ${DEPLOY_CONFIG} at ${SSH_HOST_STR} - halting!"
+  echo
+  exit 2
+fi
 
 # 2. Install package on host
-"${DEPLOY_RUN_CMD}" "root@${DEPLOY_HOST}:${DEPLOY_PATH}" \
-  pipx install --force update_ddns_zone-1.0.0.tar.gz
+if ! "${DEPLOY_RUN_CMD}" ${SSH_HOST_STR} pipx install --force "${DEPLOY_PACKAGE_DEST}/${DEPLOY_PACKAGE_FILENAME}"; then
+  echo "CRIT: Failed to transfer ${DEPLOY_CONFIG} at ${SSH_HOST_STR} - halting!"
+  echo
+  exit 3
+fi
 
 # 3. Setup dist package
-echo "ssh root@${DEPLOY_HOST}:${DEPLOY_PATH}" service dnsmasq restart
+echo "ssh ${SSH_HOST_STR}" "" "service dnsmasq restart"
 
