@@ -13,27 +13,61 @@ env = {
     **dotenv_values(".env"),
 }
 
+# !! Replace env.setdefault with the following:
+#env["DEBUG"] = get_env("DEBUG", "")
+#env["DEBUG_TRACE"] = get_env("DEBUG_TRACE", "")
+#env["VERBOSE"] = get_env("VERBOSE", "")
+#env["SYSLOG"] = get_env("SYSLOG", "")
+
 env.setdefault("DEBUG", "")
 env.setdefault("DEBUG_TRACE", "")
 env.setdefault("VERBOSE", "")
 env.setdefault("SYSLOG", "")
 
-# FIXME(JEFF): Add switch option for passing app configuration or such
-APP_CONFIG = '/usr/local/etc/app.yml'
+# !! This env variable must be set in a shell wrapper script for production
+# use. The default value suffices only for development usage and only when
+# this script is executed from the top-level root of the git repo.
+APP_CONFIG = \
+    get_env("DDNS_UPDATE_CONFIG", "config/app.yml")
+
 app = AppConfig(APP_CONFIG)
 config = app.dump()
-print(config)
+assert config != None, "The app configuration path must be set."
 
-assert config != None
+# !! This is ultimately left up to the end-user to decide of which they wish
+# to do; this must be set in either case.
+PDNS_API_KEY: str = ""
+if config.get("PDNS_API_KEY") != None:
+    PDNS_API_KEY = config["PDNS_API_KEY"]
+else:
+    PDNS_API_KEY = get_env("PDNS_API_KEY", "")
 
+assert PDNS_API_KEY != "", "The PDNS_API_KEY (X-API-Key) must be initialized."
+
+PDNS_API_VERSION: str = ""
+if config.get("PDNS_API_VERSION") != None:
+    PDNS_API_VERSION = config["PDNS_API_VERSION"]
+else:
+    PDNS_API_VERSION = get_env("PDNS_API_VERSION", "4.8.4")
+assert PDNS_API_VERSION != "", "PDNS_API_VERSION must be initialized"
+
+# !! Initial default
 PDNS_CHANGE_TYPE: Final[str] = "REPLACE"
-# FIXME(JEFF): This should be handled in update_record or so in util.py
-PDNS_API_URL: Final[str] = config["PDNS_API_PROTO"] + "://" + config["PDNS_API_HOST"] \
-    + ":" + str(config["PDNS_API_PORT"])
 
-assert config["PDNS_API_VERSION"] != None, "PDNS_API_VERSION must be initialized"
+# ?? TODO(JEFF): Use the enhanced EXTEND API when PDNS Auth server is newer
+# ?? than 4.8.4; I am limited to v4.8.4 API until I upgrade the auth server 
+# on my end.
+# >> SEE ALSO
+# >> 1. https://doc.powerdns.com/authoritative/http-api/zone.html#adding-a-single-record-to-a-rrset
+if PDNS_API_VERSION >= "4.9.12":
+    PDNS_CHANGE_TYPE = "EXTEND"
 
-log_debug("ddns_update", "Using v" + config["PDNS_API_VERSION"] + " PDNS Auth API")
+# FIXME(JEFF): This should be handled in update_record or so in utils/util.py
+PDNS_API_URL: Final[str] = config["PDNS_API_PROTO"] + "://" + \
+    config["PDNS_API_HOST"] \
++ ":" + str(config["PDNS_API_PORT"])
+
+log_debug("ddns_update", "Using v" + PDNS_API_VERSION + " PDNS Auth API")
 print("DEBUG=" + env["DEBUG"])
 print("DEBUG=" + env["DEBUG_TRACE"])
 print("VERBOSE=" + env["VERBOSE"])
@@ -141,12 +175,6 @@ def main() -> None:
   assert L_HOSTNAME != "", "L_HOSTNAME must be a given argument to script"
   assert FQDN != "", "FQDN must be a given argument to script"
 
-  # ?? TODO(JEFF): Use the enhanced EXTEND API when PDNS Auth server is newer 
-  # ?? than 4.8.4; I am limited to v4.8.4 API until I upgrade the auth server on my end.
-  # >> SEE ALSO
-  # >> 1. https://doc.powerdns.com/authoritative/http-api/zone.html#adding-a-single-record-to-a-rrset
-  if config["PDNS_API_VERSION"] >= "4.9.12":
-    PDNS_CHANGE_TYPE = "EXTEND"
 
   PDNS_API_URL_SUFFIX = \
       "/api/v1/servers/localhost/zones"
@@ -219,20 +247,20 @@ def main() -> None:
       LOG_STR = "NEW"
       
     verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_A_REQUEST: " + json.dumps(RR_TYPE_A_REQUEST))  
-    res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_A_REQUEST)
+    res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST)
     print(res.status_message)
     if res.status_code != 204:
       exit(res.status_code)
     
     verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_TXT_REQUEST: " + json.dumps(RR_TYPE_TXT_REQUEST))
-    res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_TXT_REQUEST)
+    res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST)
     print(res.status_message)
     if res.status_code != 204:
       exit(res.status_code)
     
     if DNSUPDATE_ZONE_PTR != None:
       verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_PTR_REQUEST: " + json.dumps(RR_TYPE_PTR_REQUEST))
-      res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_PTR_REQUEST)
+      res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST)
       print(res.status_message)
       if res.status_code != 204:
         exit(res.status_code)
@@ -247,7 +275,7 @@ def main() -> None:
     RR_TYPE_A_REQUEST_DEL["rrsets"][0]["ttl"] = None
     verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_A_REQUEST_DEL: " + json.dumps(RR_TYPE_A_REQUEST_DEL))
     
-    res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_A_REQUEST_DEL)
+    res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST_DEL)
     print(res.status_message)
     if res.status_code != 204:
       exit(res.status_code)
@@ -257,7 +285,7 @@ def main() -> None:
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["ttl"] = None
     verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_TXT_REQUEST_DEL: " + json.dumps(RR_TYPE_TXT_REQUEST_DEL))
 
-    res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_TXT_REQUEST_DEL)
+    res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST_DEL)
     print(res.status_message)
     if res.status_code != 204:
       exit(res.status_code)
@@ -265,8 +293,8 @@ def main() -> None:
     RR_TYPE_PTR_REQUEST_DEL = RR_TYPE_PTR_REQUEST
     RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
     RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["ttl"] = None
-    verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_PTR_REQUEST_DEL: " + json.dumps(RR_TYPE_PTR_REQUEST_DEL))     
-    res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_PTR_REQUEST_DEL)
+    verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_PTR_REQUEST_DEL: " + json.dumps(RR_TYPE_PTR_REQUEST_DEL))
+    res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST_DEL)
     print(res.status_message)
     if res.status_code != 204:
       exit(res.status_code)
