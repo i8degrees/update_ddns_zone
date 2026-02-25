@@ -5,4 +5,5 @@ types-requests==2.32.4.20260107
 urllib3==2.6.3
 typing_extensions==4.15.0
 mypy-1.19.1
-pyyaml==0.2.5
+# !! OpenWRT v24.10.4 requires this particular version
+pyyaml==6.0.1

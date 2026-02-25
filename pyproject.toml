@@ -9,9 +9,9 @@ build-backend = "setuptools.build_meta"
 requires-python = ">=3.11"
 name = "update_ddns_zone"
 version = "1.0.0"
-description = "DDNS DHCP updates with integration into dnsmasq"
+description = "DDNS DHCP update integration with DNSMASQ"
 readme = "README.md"
-#license = "MIT"
+#license = "BSD"
 license = { file = "LICENSE.md" }
 authors = [{ name = "Jeffrey Carpenter", email = "1329364+i8degrees@users.noreply.github.com" }]
 keywords = [ "ddns", "dhcp", "dnsmasq", "powerdns", "pdns" ]
@@ -23,6 +23,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3",
+    # !! OpenWRT v24.10.4 requires this particular version
     "Programming Language :: Python :: 3.11",
     "Topic :: Utilities",
 ]
@@ -31,7 +32,8 @@ dependencies = [
   "python-dotenv >= 1.2.1",
   "python-dotenv[cli] >= 1.2.1",
   "urllib3 >= 2.6.3",
-  "pyyaml >= 0.2.5"
+  # !! OpenWRT v24.10.4 requires this particular version
+  "pyyaml == 6.0.1",
 ]
 
 [project.optional-dependencies]
@@ -40,23 +42,27 @@ dev = [
   "mypy==1.19.1",
   # !! TODO Verify whether or not we still need this dep
   "types-requests==2.32.4.20260107",
-  "typing_extensions==4.15.0"
+  "typing_extensions==4.15.0",
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/i8degrees/"
-"Bug Reports" = "https://github.com/i8degrees/"
-"Source" = "https://github.com/i8degrees/"
-"Documentation" = "https://github.com/i8degrees/"
+"Homepage" = "https://github.com/i8degrees/update_ddns_zone.git"
+"Bug Reports" = "https://github.com/i8degrees/update_ddns_zone.git"
+"Source" = "https://github.com/i8degrees/update_ddns_zone.git"
+"Documentation" = "https://github.com/i8degrees/update_ddns_zone.git"
 
 [project.scripts]
-#ddns_update = "ddns_update.src.app.__main__:main"
 ddns_update = "app.__main__:main"
-#build = "build:main"
+utils = "utils.__main__:main"
+test = "test.__main__:main"
+# !! Future impl updates
+#ddns_psupdate = "psupdate.__main__:main"
+#ddns_nsupdate = "nsupdate.__main__:main"
+#nomutils = "utils.__main__:main"
+#build = "scripts.build:main"
 #lint = "lint:main"
-#test = "test:main"
-#test = ["coverage"]
 
 #[tool.setuptools]
 #py-modules = ["build", "analyze", "lint"]
+#py-modules = ["build", "deploy", "test", "ddns_update"]
 

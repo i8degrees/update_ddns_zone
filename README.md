@@ -10,24 +10,29 @@ tags:
   - DNSMASQ_DOMAIN
 ---
 
-# update_ddns_zone
+# ddns_update
 
 *WIP* ...
 
 ## usage
 
-```shell
-pip install update_ddns_zone-1.0.0-py3-none-any.whl
-pipx install update_ddns_zone-1.0.0-py3-none-any.whl
-```
-
 ### development
 
+
 ```shell
-python3 -m venv .venv
 python3 -m build
+python3 -m venv .venv
 pip install -r requirements.txt
 pip install -e .
+# build dist packages and upload to host for dev deployment
+scripts/build.sh
+```
+
+#### deployment
+```shell
+pipx install update_ddns_zone-1.0.0.tar.gz
+# second phase of deployment; upload to host for bootstrap
+scripts/deploy.sh
 ```
 
 ## Foot Notes

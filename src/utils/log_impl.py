@@ -18,9 +18,12 @@ from dotenv import dotenv_values
 config = {
     **os.environ,
     **dotenv_values(".env"),
-    **dotenv_values(".env.dev"),
-    **dotenv_values(".env.prod"),
 }
+
+config.setdefault("DEBUG", "")
+config.setdefault("DEBUG_TRACE", "")
+config.setdefault("VERBOSE", "")
+config.setdefault("SYSLOG", "")
 
 def message(tag:str, msg: str) -> None:
     if not tag:
@@ -51,6 +54,7 @@ def verbose(tag:str, msg: str) -> None:
 def log_debug(tag:str, msg: str) -> None:
     if not tag:
         tag = "DEBUG"
+
     if parse_boolean(config["DEBUG"]) == True:
         print(tag, ":", msg)
     else:

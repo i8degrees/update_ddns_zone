@@ -18,6 +18,7 @@ def get_env(env_var: str, default_value: str = "") -> str|None:
 # get_env("DEBUG", "True")
 # get_env("DEBUG", "1")
 # get_env("DNSMASQ_ENABLED", "enabled")
+# !! Replace get_env with get_env_bool ASAP
 def get_env_bool(env_var: str, default_value: str = "") -> bool:
     result: bool = False
     resultVal: str|None = None

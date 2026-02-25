@@ -2,6 +2,7 @@ from .parse_boolean import parse_boolean
 from .util import *
 from .env import *
 from .log_impl import *
+from .AppConfig import AppConfig
 
 __all__ = [
   'EXIT_PARAMS',
@@ -23,5 +24,6 @@ __all__ = [
   'log_debug',
   'verbose_debug',
   'debug_trace',
+  'AppConfig',
 ]
 

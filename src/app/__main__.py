@@ -6,32 +6,38 @@ import os
 import sys
 from dotenv import dotenv_values
 from typing import Final # type: ignore
-
 from utils import *
-#from utils.util import * # util.py
-#from utils.parse_boolean import * # parse_boolean.py
-#from utils.env import * # env.py
-#from utils.log_impl import *
 
-config = {
+env = {
     **os.environ,
     **dotenv_values(".env"),
-    **dotenv_values(".env.dev"),
-    **dotenv_values(".env.prod"),
 }
+
+env.setdefault("DEBUG", "")
+env.setdefault("DEBUG_TRACE", "")
+env.setdefault("VERBOSE", "")
+env.setdefault("SYSLOG", "")
+
+# FIXME(JEFF): Add switch option for passing app configuration or such
+APP_CONFIG = '/usr/local/etc/app.yml'
+app = AppConfig(APP_CONFIG)
+config = app.dump()
+print(config)
 
 assert config != None
 
 PDNS_CHANGE_TYPE: Final[str] = "REPLACE"
+# FIXME(JEFF): This should be handled in update_record or so in util.py
 PDNS_API_URL: Final[str] = config["PDNS_API_PROTO"] + "://" + config["PDNS_API_HOST"] \
     + ":" + str(config["PDNS_API_PORT"])
 
 assert config["PDNS_API_VERSION"] != None, "PDNS_API_VERSION must be initialized"
 
-log_debug("nsupdate-env", "Using v" + config["PDNS_API_VERSION"] + " PDNS Auth API")
-print("DEBUG=" + config["DEBUG"])
-print("VERBOSE=" + config["VERBOSE"])
-print("SYSLOG=" + config["SYSLOG"])
+log_debug("ddns_update", "Using v" + config["PDNS_API_VERSION"] + " PDNS Auth API")
+print("DEBUG=" + env["DEBUG"])
+print("DEBUG=" + env["DEBUG_TRACE"])
+print("VERBOSE=" + env["VERBOSE"])
+print("SYSLOG=" + env["SYSLOG"])
 
 def usage_info(name: str, exit_code: int):
   script_name = str(name)
@@ -55,7 +61,7 @@ def usage_info(name: str, exit_code: int):
 def main() -> None:
   args = sys.argv
   num_args = len(args)
-  log_debug("nsupdate", "num_args:" + str(num_args))
+  log_debug("ddns_update", "num_args:" + str(num_args))
 
   # !! IMPORTANT(JEFF): DNSMASQ_DOMAIN is a required environment variable of which is
   # only passed to this script when the end-user has dnsmasq configured with
@@ -64,8 +70,11 @@ def main() -> None:
   DNSMASQ_DOMAIN = \
     canonical_dns_name(get_env("DNSMASQ_DOMAIN"))
 
+  DNSUPDATE_ZONE_PTR = \
+    canonical_dns_name(get_env("DNSUPDATE_ZONE_PTR"))
+
   # >> NOTE(JEFF): This is for our convenience during development of this script.
-  if not get_env("DNSMASQ_DOMAIN") and parse_boolean(config["DEBUG"]) == True:
+  if not get_env("DNSMASQ_DOMAIN") and parse_boolean(env["DEBUG"]) == True:
     DNSMASQ_DOMAIN = canonical_dns_name("home.arpa")
 
   DNSUPDATE_ZONE_PTR: Final[str|None] = None
@@ -94,8 +103,8 @@ def main() -> None:
     # ?? TODO(JEFF): Rename AOD to DNSMASQ_CMD
     AOD = args[1].lower() # (ADD|OLD|DEL)
   except IndexError:
-    crit("nsupdate", "Missing script argument AOD")
-    usage_info("nsupdate.py", EXIT_PARAMS)
+    crit("ddns_update", "Missing script argument AOD")
+    usage_info("ddns_update", EXIT_PARAMS)
   
   # !! Required argument
   # >> DNSMASQ may pass DUID made of the link layer *...* instead of
@@ -105,8 +114,8 @@ def main() -> None:
     # ?? TODO(JEFF): Rename MAC to MAC_ADDRESS
     MAC = str(args[2])
   except IndexError:
-    crit("nsupdate", "Missing script argument MAC")
-    usage_info("nsupdate.py", EXIT_PARAMS)
+    crit("ddns_update", "Missing script argument MAC")
+    usage_info("ddns_update", EXIT_PARAMS)
   
   # !! Required argument
   try:
@@ -115,17 +124,17 @@ def main() -> None:
     RIP = f'{PTR}.in-addr.arpa.'
     #RIP = f'{PTR}.{DNSUPDATE_ZONE_PTR}'
   except IndexError:
-    crit("nsupdate", "Missing script argument IP_ADDR")
-    usage_info("nsupdate.py", EXIT_PARAMS)
+    crit("ddns_update", "Missing script argument IP_ADDR")
+    usage_info("ddns_update", EXIT_PARAMS)
   
   # !! Required argument
   try:
     L_HOSTNAME = short_hostname(str(args[4]))
     FQDN = canonical_dns_name(L_HOSTNAME) + canonical_dns_name(str(DNSMASQ_DOMAIN))
-    log_debug("nsupdate", "FQDN:" + FQDN)
+    log_debug("ddns_update", "FQDN:" + FQDN)
   except IndexError:
-    crit("nsupdate", "Missing script argument HOSTNAME")
-    usage_info("nsupdate.py", EXIT_PARAMS)
+    crit("ddns_update", "Missing script argument HOSTNAME")
+    usage_info("ddns_update", EXIT_PARAMS)
 
   assert MAC != "", "MAC must be a given argument to script"
   assert IP_ADDR != "", "IP_ADDR must be a given argument to script"
@@ -146,7 +155,7 @@ def main() -> None:
     "rrsets": [{
       "name": f'{FQDN}',
       "type": "A",
-      "ttl": f'{config["PDNS_TTL"]}',
+      "ttl": f'{config["PDNS_API_TTL"]}',
       # ?? TODO(JEFF): Use EXTEND API when PDNS_API_VERSION >= 4.9.12
       "changetype": "REPLACE", # DELETE
       "records": [{
@@ -160,7 +169,7 @@ def main() -> None:
     "rrsets": [{
       "name": f'{FQDN}',
       "type": "TXT",
-      "ttl": f'{config["PDNS_TTL"]}',
+      "ttl": f'{config["PDNS_API_TTL"]}',
       # ?? TODO(JEFF): Use EXTEND API when PDNS_API_VERSION >= 4.9.12
       "changetype": "REPLACE", # DELETE
       "records": [{
@@ -177,7 +186,7 @@ def main() -> None:
       #"name": f'{RIP}.in-addr.arpa.',
       "name": f'{RIP}',
       "type": "PTR",
-      "ttl": f'{config["PDNS_TTL"]}',
+      "ttl": f'{config["PDNS_API_TTL"]}',
       # ?? TODO(JEFF): Use EXTEND API when PDNS_API_VERSION >= 4.9.12
       "changetype": "REPLACE", # DELETE
       "records": [{
@@ -187,7 +196,7 @@ def main() -> None:
     }]
   }
 
-  #verbose_debug("nsupdate", "wtf")
+  #verbose_debug("ddns_update", "wtf")
 
   #print("RR_TYPE_PTR_REQUEST_DEL:", json.dumps(RR_TYPE_PTR_REQUEST_DEL))
 
@@ -197,7 +206,7 @@ def main() -> None:
     if AOD != "add" and AOD != "old" and AOD != "del":
       raise ValueError
   except ValueError:
-    crit("nsupdate", "AOD must be one of: (ADD|OLD|DEL).")
+    crit("ddns_update", "AOD must be one of: (ADD|OLD|DEL).")
     exit(EXIT_PARAMS)
   
   # !! Lease registration or renewal
@@ -209,24 +218,25 @@ def main() -> None:
     elif LOG_STR == "add":
       LOG_STR = "NEW"
       
-    verbose_debug(f'nsupdate-{LOG_STR}', "RR_TYPE_A_REQUEST: " + json.dumps(RR_TYPE_A_REQUEST))  
+    verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_A_REQUEST: " + json.dumps(RR_TYPE_A_REQUEST))  
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_A_REQUEST)
     print(res.status_message)
     if res.status_code != 204:
       exit(res.status_code)
     
-    verbose_debug(f'nsupdate-{LOG_STR}', "RR_TYPE_TXT_REQUEST: " + json.dumps(RR_TYPE_TXT_REQUEST))
+    verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_TXT_REQUEST: " + json.dumps(RR_TYPE_TXT_REQUEST))
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_TXT_REQUEST)
     print(res.status_message)
     if res.status_code != 204:
       exit(res.status_code)
     
-    verbose_debug(f'nsupdate-{LOG_STR}', "RR_TYPE_PTR_REQUEST: " + json.dumps(RR_TYPE_PTR_REQUEST))
-    res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_PTR_REQUEST)
-    print(res.status_message)
-    if res.status_code != 204:
-      exit(res.status_code)
-  
+    if DNSUPDATE_ZONE_PTR != None:
+      verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_PTR_REQUEST: " + json.dumps(RR_TYPE_PTR_REQUEST))
+      res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_PTR_REQUEST)
+      print(res.status_message)
+      if res.status_code != 204:
+        exit(res.status_code)
+
   # !! Lease release
   elif AOD == "del":
     # >> NOTE(JEFF): The LOG_STR is purely for visual aid in log output
@@ -235,7 +245,7 @@ def main() -> None:
     RR_TYPE_A_REQUEST_DEL = RR_TYPE_A_REQUEST
     RR_TYPE_A_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
     RR_TYPE_A_REQUEST_DEL["rrsets"][0]["ttl"] = None
-    verbose_debug(f'nsupdate-{LOG_STR}', "RR_TYPE_A_REQUEST_DEL: " + json.dumps(RR_TYPE_A_REQUEST_DEL))
+    verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_A_REQUEST_DEL: " + json.dumps(RR_TYPE_A_REQUEST_DEL))
     
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_A_REQUEST_DEL)
     print(res.status_message)
@@ -245,21 +255,19 @@ def main() -> None:
     RR_TYPE_TXT_REQUEST_DEL = RR_TYPE_TXT_REQUEST
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["ttl"] = None
-    verbose_debug(f'nsupdate-{LOG_STR}', "RR_TYPE_TXT_REQUEST_DEL: " + json.dumps(RR_TYPE_TXT_REQUEST_DEL))
+    verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_TXT_REQUEST_DEL: " + json.dumps(RR_TYPE_TXT_REQUEST_DEL))
 
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_TXT_REQUEST_DEL)
     print(res.status_message)
     if res.status_code != 204:
       exit(res.status_code)
-      
+
     RR_TYPE_PTR_REQUEST_DEL = RR_TYPE_PTR_REQUEST
     RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
     RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["ttl"] = None
-    verbose_debug(f'nsupdate-{LOG_STR}', "RR_TYPE_PTR_REQUEST_DEL: " + json.dumps(RR_TYPE_PTR_REQUEST_DEL))     
+    verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_PTR_REQUEST_DEL: " + json.dumps(RR_TYPE_PTR_REQUEST_DEL))     
     res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = config["PDNS_API_KEY"], json_data = RR_TYPE_PTR_REQUEST_DEL)
     print(res.status_message)
     if res.status_code != 204:
       exit(res.status_code)
 
-if __name__ == "__main__":
-  main(num_args, args)

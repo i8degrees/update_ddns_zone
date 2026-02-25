@@ -1,0 +1,87 @@
+# config/app.yml
+#
+# one or more nameservers must be specified for script operation; leaving it
+# un-initialized will effectively terminate the core script functionality
+# beyond early init
+#
+# tsig_keys are optional
+#
+# there must be at least one of `forward-zones` `reverse-zones`
+#
+# not supplying one (or more) reverse-zones implies skipping
+# PTR RR records changes in the main script loop
+#
+# not supplying one (or more) forward-zones implies skipping
+# RR records changes in the main script loop
+---
+
+version: 1
+
+# pdns auth server version; pdns_server --version
+PDNS_API_VERSION: "4.8.4"
+PDNS_API_PROTO: "http" # (http|https)
+# >> This must be an absolute, valid path to a base64 encoded TLS 
+# certificate and is only used when PDNS_API_PROTO is https
+# >> (None|path|PEM certificate)
+PDNS_API_CERTIFICATE: None
+# hostname or (IPv4|IPv6) of the backend PDNS Auth webserver
+PDNS_API_HOST: "ns4.home"
+PDNS_API_PORT: 8081
+# >> This should be set in the launch wrapper script on the deployed host
+#PDNS_API_KEY:
+PDNS_API_TTL: 300
+forward-ddns:
+  ddns-domains:
+    - name: home.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+    - name: ha.home.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+    - name: wg.home.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+reverse-ddns:
+  ddns-domains:
+    - name: 12.168.192.in-addr.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+    - name: 14.168.192.in-addr.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+    - name: 9.168.192.in-addr.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+tsig-keys:
+  - name: sw2-axfr
+    algorithm: hmac-sha256
+    secret: xxx
+  - name: tsig-dummy-key
+    algorithm: md5
+    secret: xxx
+
+
