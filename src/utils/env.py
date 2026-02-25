@@ -7,6 +7,8 @@
 import os
 from .parse_boolean import *
 
+# ?? We should not force the default value to be a string as len(None) is a
+# ?? TypeError.
 def get_env(env_var: str, default_value: str = "") -> str|None:
     result: str|None = None
     if len(default_value) > 0:
@@ -18,7 +20,6 @@ def get_env(env_var: str, default_value: str = "") -> str|None:
 # get_env("DEBUG", "True")
 # get_env("DEBUG", "1")
 # get_env("DNSMASQ_ENABLED", "enabled")
-# !! Replace get_env with get_env_bool ASAP
 def get_env_bool(env_var: str, default_value: str = "") -> bool:
     result: bool = False
     resultVal: str|None = None
@@ -28,8 +29,8 @@ def get_env_bool(env_var: str, default_value: str = "") -> bool:
         resultVal = os.environ.get(env_var)
     return parse_boolean(result)
 
-# ?? TODO(JEFF): Verify that this actually modifies the environment outside the
-# scope of this script!
+# ?? TODO(JEFF): Verify that this actually modifies the environment outside
+# ?? scope of this script!
 def set_env(env_var, value) -> str|None:
     value = os.environ.get(env_var)
     return get_env(env_var)
