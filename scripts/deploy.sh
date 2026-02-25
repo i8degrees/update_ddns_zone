@@ -44,5 +44,5 @@ if ! "${DEPLOY_RUN_CMD}" ${SSH_HOST_STR} pipx install --force "${DEPLOY_PACKAGE_
 fi
 
 # 3. Setup dist package
-echo "ssh ${SSH_HOST_STR}" "" "service dnsmasq restart"
+echo "ssh ${SSH_HOST_STR}" "service dnsmasq restart"
 
