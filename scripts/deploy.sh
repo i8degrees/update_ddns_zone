@@ -30,10 +30,12 @@ if ! $DEPLOY_CMD -O "${DEPLOY_PACKAGE_PATH}" ${SSH_HOST_STR}:${DEPLOY_PACKAGE_DE
 fi
 
 # 1b. Copy configuration file
+# >> Do not fear if this fails -- we may have the file locked with chattr +i
+# >> in order to prevent changes.
 if ! $DEPLOY_CMD -O ${DEPLOY_CONFIG} ${SSH_HOST_STR}:${DEPLOY_CONFIG_DEST}; then
-  echo "CRIT: Failed to transfer ${DEPLOY_CONFIG} at ${SSH_HOST_STR} - halting!"
+  echo "WARN: Failed to transfer ${DEPLOY_CONFIG} at ${SSH_HOST_STR} - continuing."
   echo
-  exit 2
+  #exit 2
 fi
 
 # 2. Install package on host
