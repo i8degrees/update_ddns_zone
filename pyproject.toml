@@ -55,8 +55,9 @@ dev = [
 
 [project.scripts]
 ddns_update = "app.__main__:main"
+# ?? utils should not be an executable
 utils = "utils.__main__:main"
-test = "test.__main__:main"
+ddns_update_tests = "test.__main__:main"
 # !! Future impl updates
 #ddns_psupdate = "psupdate.__main__:main"
 #ddns_nsupdate = "nsupdate.__main__:main"
