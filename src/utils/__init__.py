@@ -3,7 +3,10 @@ from .util import *
 from .env import *
 from .log_impl import *
 from .AppConfig import AppConfig
+from .FetchError import FetchError
 
+# !! This is applicable only when the end-user imports the module with the `*`
+# syntax; `from utils import *`
 __all__ = [
   'EXIT_PARAMS',
   'parse_boolean',
@@ -15,7 +18,6 @@ __all__ = [
   'canonical_dns_name',
   'get_env',
   'get_env_bool',
-  'set_env',
   'message',
   'crit',
   'error',
@@ -25,5 +27,6 @@ __all__ = [
   'verbose_debug',
   'debug_trace',
   'AppConfig',
+  'FetchError'
 ]
 

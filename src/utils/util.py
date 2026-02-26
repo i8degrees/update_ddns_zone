@@ -22,8 +22,9 @@ from dotenv import dotenv_values
 from .parse_boolean import *
 from .env import * # env.py
 from logging import *
+from .FetchError import FetchError
 
-config = {
+env = {
     **os.environ,
     **dotenv_values(".env"),
     **dotenv_values(".env.dev"),
@@ -86,64 +87,112 @@ def _fetch(url: str, headers: list, method: str, body: dict = {}):
 # [^40]: https://doc.powerdns.com/authoritative/http-api/zone.html#rrset
 # [^45]: https://doc.powerdns.com/authoritative/http-api/zone.html#creating-new-rrset
 def update_record(url: str, zone: str, api_key: str, json_data: str) -> int:
-    request_headers = {
-        "Content-Type": "application/json",
-        "X-API-Key": api_key,
-    }
-    
-    if len(url) > 0 and len(zone) > 0:
-        api_url = url + "/" + zone
+    err = FetchError(-1, "HTTP/1.1 UNKNOWN")
+    request_headers = {}
+
+    request_headers.setdefault("Content-Type", "application/json")
+    request_headers.setdefault("X-API-Key", "")
+
+    if api_key and len(api_key) > 0:
+        request_headers["X-API-Key"] = api_key
     else:
-        # ERR
-        return 1
-    
+        err.set_message("Missing X-API-Key")
+        err.set_code(1)
+        return err
+
+    if url and len(url) > 0:
+        api_url = url + "/"
+    else:
+        err.set_message("Missing api_url")
+        err.set_code(11)
+        err.set_stack({
+            "headers": request_headers,
+            "api_url": "zero-length"
+        })
+        return err
+
+    if zone and len(zone) > 0:
+        api_url += zone
+    else:
+        err.set_message("Missing update zone")
+        err.set_code(111)
+        err.set_stack({
+            "headers": request_headers,
+            "api_url": api_url,
+            "zone": "zero-length",
+        })
+        return err
+
     # !! TODO(JEFF): We must construct the JSON input inside this function, instead
-    # of in the main executable as we have been doing.
+    # !! of in the main executable as we have been doing.
     # ?? TODO(JEFF): Validate JSON input
     request_data = json.dumps(json_data)
 
     res = _fetch(url=api_url, headers=request_headers, method="PATCH", body=request_data)
-    
-    res_status_code: int = -1
-    # !! WARNING(JEFF): This is the catch-all response and should never happen!
-    res_message = "HTTP/1.1 UNKNOWN"
+
     if res and res.status:
         # >> 1. https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
-        res_status_code = res.status
-    
-    if res_status_code == 200: # Success!
-        res_message = "HTTP/1.1 200 OK"
-    if res_status_code == 204: # Success!
-        res_message = "HTTP/1.1 204 NO CONTENT"
-    elif res_status_code == 400:
+        err.set_code(res.status)
+    if res.status == 200: # Success!
+        err.set_message("HTTP/1.1 200 OK")
+    if res.status == 204: # Success!
+        err.set_message("HTTP/1.1 204 NO CONTENT")
+    elif res.status == 400:
         # due to invalid JSON body
         # due to JSON body from script is not a hash (???)
-        res_message = "HTTP/1.1 400 BAD REQUEST"
-    elif res_status_code == 401:
-        res_message = "HTTP/1.1 UNAUTHORIZED"
-    elif res_status_code == 403:
-        res_message = "HTTP/1.1 FORBIDDEN"
-    elif res_status_code == 404:
-        res_message = "HTTP/1.1 404 NOT FOUND"
-    elif res_status_code == 405:
-        res_message = "HTTP/1.1 405 METHOD NOT ALLOWED"
-    elif res_status_code == 422:
-        res_message = "HTTP/1.1 422 UNPROCESSABLE ENTITY"
-    
-    response_detail = namedtuple('response_detail', 'status_code, status_message')
-    response_detail.status_code = res_status_code
-    response_detail.status_message = res_message
-    return response_detail
+        err.set_message("HTTP/1.1 400 BAD REQUEST")
+    elif res.status == 401:
+        err.set_message("HTTP/1.1 UNAUTHORIZED")
+    elif res.status == 403:
+        err.set_message("HTTP/1.1 FORBIDDEN")
+    elif res.status == 404:
+        err.set_message("HTTP/1.1 404 NOT FOUND")
+    elif res.status == 405:
+        err.set_message("HTTP/1.1 405 METHOD NOT ALLOWED")
+    elif res.status == 422:
+        err.set_message("HTTP/1.1 422 UNPROCESSABLE ENTITY")
+
+    return err
 
 # !! WARNING(JEFF): This is subject to change, or even be removed all together!
 def delete_record(url, zone_str, api_key, data):
-    request_headers = {
-        "Content-Type": "application/json",
-        "X-API-Key": api_key,
-    }
+    err = FetchError(-1, "HTTP/1.1 UNKNOWN")
+    request_headers = {}
 
-    api_url = str(url)
-    zone = str(zone_str)
+    request_headers.setdefault("Content-Type", "application/json")
+    request_headers.setdefault("X-API-Key", "")
+
+    if api_key and len(api_key) > 0:
+        request_headers["X-API-Key"] = api_key
+    else:
+        err.set_message("Missing X-API-Key")
+        err.set_code(1)
+        return err
+
+    if url and len(url) > 0:
+        api_url = url + "/"
+    else:
+        err.set_message("Missing api_url")
+        err.set_code(11)
+        err.set_stack({
+            "headers": request_headers,
+            "api_url": "zero-length"
+        })
+
+        return err
+
+    if zone and len(zone) > 0:
+        api_url += zone
+    else:
+        err.set_message("Missing update zone")
+        err.set_code(111)
+        err.set_stack({
+            "headers": request_headers,
+            "api_url": api_url,
+            "zone": "zero-length",
+        })
+        return err
+
     # !! TODO(JEFF): We must construct the JSON input inside this function, instead
     # !! of in the main executable as we have been doing.
     # ?? TODO(JEFF): Validate JSON input
@@ -152,10 +201,31 @@ def delete_record(url, zone_str, api_key, data):
 
     res = _fetch(api_url, request_headers, request_data, "DELETE")
     #res = requests.patch(api_url, headers=request_headers, data=request_data)
-    if parse_boolean(config["DEBUG"]) == True:
+    if parse_boolean(env["DEBUG"]) == True:
         print("RES:", res.json)
-    
-    return res.status_code
+    if res and res.status:
+        # >> 1. https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+        err.set_code(res.status)
+    if res.status == 200: # Success!
+        err.set_message("HTTP/1.1 200 OK")
+    if res.status == 204: # Success!
+        err.set_message("HTTP/1.1 204 NO CONTENT")
+    elif res.status == 400:
+        # due to invalid JSON body
+        # due to JSON body from script is not a hash (???)
+        err.set_message("HTTP/1.1 400 BAD REQUEST")
+    elif res.status == 401:
+        err.set_message("HTTP/1.1 UNAUTHORIZED")
+    elif res.status == 403:
+        err.set_message("HTTP/1.1 FORBIDDEN")
+    elif res.status == 404:
+        err.set_message("HTTP/1.1 404 NOT FOUND")
+    elif res.status == 405:
+        err.set_message("HTTP/1.1 405 METHOD NOT ALLOWED")
+    elif res.status == 422:
+        err.set_message("HTTP/1.1 422 UNPROCESSABLE ENTITY")
+
+    return err
 
 # !! FIXME(JEFF): This function is incomplete and should not yet be used!
 # ?? TODO(JEFF): Verify what exactly the use of the `inspect` module offers us!
@@ -165,7 +235,7 @@ def delete_record(url, zone_str, api_key, data):
 #
 def run_cmd(program: str, program_args = [], program_mode = 600):
     cmd = str(program)
-    if parse_boolean(config["DEBUG"]) == True:
+    if parse_boolean(env["DEBUG"]) == True:
         return os.spawnv(file = cmd, args = program_args, mode = program_mode)
     else:
         pass
@@ -245,7 +315,7 @@ def update_record_new(url: str, zone: str, api_key: str, RRset: dict) -> int:
     # ?? than 4.8.4; I am limited to v4.8.4 API until I upgrade the auth server on my end.
     # >> SEE ALSO
     # >> 1. https://doc.powerdns.com/authoritative/http-api/zone.html#adding-a-single-record-to-a-rrset
-    if config["PDNS_API_VERSION"] >= "4.9.12":
+    if env["PDNS_API_VERSION"] >= "4.9.12":
         PDNS_CHANGE_TYPE = "EXTEND"
 
     res = _fetch(api_url, request_headers, "PATCH", request_data)

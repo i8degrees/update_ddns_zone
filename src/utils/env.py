@@ -7,13 +7,12 @@
 import os
 from .parse_boolean import *
 
-# ?? We should not force the default value to be a string as len(None) is a
-# ?? TypeError.
-def get_env(env_var: str, default_value: str = "") -> str|None:
-    result: str|None = None
-    if len(default_value) > 0:
+def get_env(env_var: str, default_value: any) -> str|None:
+    result = None
+    if default_value:
         result = os.environ.get(env_var, default_value)
     else:
+        #result = ""
         result = os.environ.get(env_var)
     return result
 
@@ -23,14 +22,8 @@ def get_env(env_var: str, default_value: str = "") -> str|None:
 def get_env_bool(env_var: str, default_value: str = "") -> bool:
     result: bool = False
     resultVal: str|None = None
-    if len(default_value) > 0:
+    if default_value and len(default_value) > 0:
         resultVal = os.environ.get(env_var, default_value)
     else:
         resultVal = os.environ.get(env_var)
     return parse_boolean(result)
-
-# ?? TODO(JEFF): Verify that this actually modifies the environment outside
-# ?? scope of this script!
-def set_env(env_var, value) -> str|None:
-    value = os.environ.get(env_var)
-    return get_env(env_var)

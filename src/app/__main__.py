@@ -102,13 +102,13 @@ def main() -> None:
   # an explicit domain. See the dnsmasq manual page regarding the `--domain`
   # parameter.
   DNSMASQ_DOMAIN = \
-    canonical_dns_name(get_env("DNSMASQ_DOMAIN"))
+    canonical_dns_name(get_env("DNSMASQ_DOMAIN", ""))
 
   DNSUPDATE_ZONE_PTR = \
-    canonical_dns_name(get_env("DNSUPDATE_ZONE_PTR"))
+    canonical_dns_name(get_env("DNSUPDATE_ZONE_PTR", ""))
 
   # >> NOTE(JEFF): This is for our convenience during development of this script.
-  if not get_env("DNSMASQ_DOMAIN") and parse_boolean(env["DEBUG"]) == True:
+  if not get_env("DNSMASQ_DOMAIN", "") and parse_boolean(env["DEBUG"]) == True:
     DNSMASQ_DOMAIN = canonical_dns_name("home.arpa")
 
   DNSUPDATE_ZONE_PTR: Final[str|None] = None
@@ -138,7 +138,7 @@ def main() -> None:
     AOD = args[1].lower() # (ADD|OLD|DEL)
   except IndexError:
     crit("ddns_update", "Missing script argument AOD")
-    usage_info("ddns_update", EXIT_PARAMS)
+    sys.exit(EXIT_PARAMS)
   
   # !! Required argument
   # >> DNSMASQ may pass DUID made of the link layer *...* instead of
@@ -149,7 +149,7 @@ def main() -> None:
     MAC = str(args[2])
   except IndexError:
     crit("ddns_update", "Missing script argument MAC")
-    usage_info("ddns_update", EXIT_PARAMS)
+    sys.exit(EXIT_PARAMS)
   
   # !! Required argument
   try:
@@ -159,7 +159,7 @@ def main() -> None:
     #RIP = f'{PTR}.{DNSUPDATE_ZONE_PTR}'
   except IndexError:
     crit("ddns_update", "Missing script argument IP_ADDR")
-    usage_info("ddns_update", EXIT_PARAMS)
+    sys.exit(EXIT_PARAMS)
   
   # !! Required argument
   try:
@@ -168,8 +168,8 @@ def main() -> None:
     log_debug("ddns_update", "FQDN:" + FQDN)
   except IndexError:
     crit("ddns_update", "Missing script argument HOSTNAME")
-    usage_info("ddns_update", EXIT_PARAMS)
-
+    sys.exit(EXIT_PARAMS)
+  
   assert MAC != "", "MAC must be a given argument to script"
   assert IP_ADDR != "", "IP_ADDR must be a given argument to script"
   assert L_HOSTNAME != "", "L_HOSTNAME must be a given argument to script"
@@ -248,22 +248,22 @@ def main() -> None:
       
     verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_A_REQUEST: " + json.dumps(RR_TYPE_A_REQUEST))  
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST)
-    print(res.status_message)
-    if res.status_code != 204:
-      exit(res.status_code)
+    print(res.message())
+    if res.status_code() != 204:
+      exit(res.status_code())
     
     verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_TXT_REQUEST: " + json.dumps(RR_TYPE_TXT_REQUEST))
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST)
-    print(res.status_message)
-    if res.status_code != 204:
-      exit(res.status_code)
+    print(res.message())
+    if res.status_code() != 204:
+      exit(res.status_code())
     
     if DNSUPDATE_ZONE_PTR != None:
       verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_PTR_REQUEST: " + json.dumps(RR_TYPE_PTR_REQUEST))
       res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST)
-      print(res.status_message)
-      if res.status_code != 204:
-        exit(res.status_code)
+      print(res.message())
+      if res.status_code() != 204:
+        exit(res.status_code())
 
   # !! Lease release
   elif AOD == "del":
@@ -276,9 +276,9 @@ def main() -> None:
     verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_A_REQUEST_DEL: " + json.dumps(RR_TYPE_A_REQUEST_DEL))
     
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST_DEL)
-    print(res.status_message)
-    if res.status_code != 204:
-      exit(res.status_code)
+    print(res.status_message())
+    if res.status_code() != 204:
+      exit(res.status_code())
 
     RR_TYPE_TXT_REQUEST_DEL = RR_TYPE_TXT_REQUEST
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
@@ -286,16 +286,16 @@ def main() -> None:
     verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_TXT_REQUEST_DEL: " + json.dumps(RR_TYPE_TXT_REQUEST_DEL))
 
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST_DEL)
-    print(res.status_message)
-    if res.status_code != 204:
-      exit(res.status_code)
+    print(res.status_message())
+    if res.status_code() != 204:
+      exit(res.status_code())
 
     RR_TYPE_PTR_REQUEST_DEL = RR_TYPE_PTR_REQUEST
     RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
     RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["ttl"] = None
     verbose_debug(f'ddns_update-{LOG_STR}', "RR_TYPE_PTR_REQUEST_DEL: " + json.dumps(RR_TYPE_PTR_REQUEST_DEL))
     res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST_DEL)
-    print(res.status_message)
-    if res.status_code != 204:
-      exit(res.status_code)
+    print(res.status_message())
+    if res.status_code() != 204:
+      exit(res.status_code())
 

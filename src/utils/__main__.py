@@ -6,6 +6,7 @@ from logging import *
 from utils.util import *
 from utils.log_impl import *
 from .AppConfig import AppConfig
+from .FetchError import FetchError
 
 # ?? Attempt to relocate dotenv env object here?
 
@@ -38,5 +39,7 @@ def main():
         canonical_dns_name,
         # AppConfig.py
         AppConfig,
+        # FetchError.py
+        FetchError,
     ]
 
