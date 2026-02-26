@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# ddns_update launch wrapper script
+#
+# SEE ALSO
+# 1. man 8 dnsmasq
+# 2. https://dnsmasq-man-page.net
+
+# .env
+DEBUG=1
+DEBUG_TRACE=
+VERBOSE=1
+SYSLOG=1
+
+# APP_CONFIG
+DDNS_UPDATE_CONFIG=REQUIRED_USER_ONE
+
+# This overrides potential setting in app.yml
+PDNS_API_KEY=REQUIRED_USER_TWO
+export DDNS_UPDATE_CONFIG
+export PDNS_API_KEY
+/root/.local/share/pipx/venvs/update-ddns-zone/bin/ddns_update $@
+unset DDNS_UPDATE_CONFIG
+unset PDNS_API_KEY
