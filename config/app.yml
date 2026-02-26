@@ -27,7 +27,8 @@ PDNS_API_CERTIFICATE: None
 # hostname or (IPv4|IPv6) of the backend PDNS Auth webserver
 PDNS_API_HOST: "ns4.home"
 PDNS_API_PORT: 8081
-# >> This should be set in the launch wrapper script on the deployed host
+# >> This is being set in the launch wrapper script on the deployment host;
+# >> you may opt to set it here, instead.
 #PDNS_API_KEY:
 PDNS_API_TTL: 300
 forward-ddns:
@@ -35,16 +36,21 @@ forward-ddns:
     - name: home.arpa
       key-name: sw2-axfr
       dns-servers:
-        - ip-address: 192.168.12.15
+        # The name field is only used as a visual debugging aid
+        - name: "ns3.home"
+          ip-address: 192.168.12.15
           port: 5300
-        - ip-address: 192.168.12.16
+        - name: "ns4.home"
+          ip-address: 192.168.12.16
           port: 5300
     - name: ha.home.arpa
       key-name: sw2-axfr
       dns-servers:
-        - ip-address: 192.168.12.15
+        - name: "ns3.home"
+          ip-address: 192.168.12.15
           port: 5300
-        - ip-address: 192.168.12.16
+        - name: "ns4.home"
+          ip-address: 192.168.12.16
           port: 5300
     - name: wg.home.arpa
       key-name: sw2-axfr
