@@ -1,0 +1,33 @@
+# Ansible Playbook template for DDNS update bootstrapping on OpenWRT
+---
+
+- name: Template and execute a shell script
+  hosts:
+    - "sw2-gw.lan"
+  # Optional, depends on whether you use Ansible facts
+  gather_facts: false
+  vars:
+    debug: 0
+    debug_trace: 0
+    verbose: 0
+    syslog: 0
+    ddns_update_config: "/usr/local/etc/app.yml"
+    pdns_api_key: ""
+    project_name: update-ddns-zone
+    script_exe: ddns_update
+    run_conditional_part: true
+
+  tasks:
+    - name: Render and copy the shell script to the remote host
+      ansible.builtin.template:
+        src: scripts/ddns_update_stub.j2
+        dest: /usr/local/libexec/ddns_update_stub
+        mode: '0755' # This makes the script executable
+
+    - name: Execute the templated shell script
+      ansible.builtin.shell: "service dnsmasq restart"
+      args:
+        # Prevents the task from running if the script has already run and 
+        # created a specific file (idempotency)
+        #creates: /tmp/.ddns_update
+
