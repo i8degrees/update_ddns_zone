@@ -8,3 +8,5 @@ def main() -> int:
     assert res == "1.0.0.127"
     return 0
 
+# FIXME(JEFF): ?
+#main()
