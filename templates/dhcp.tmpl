@@ -3,38 +3,38 @@
 #
 
 config dnsmasq 'dnsmasq_SYN'
-  # !! Disable DNS resolving
-  option port 0
 	option leasefile '/tmp/dhcp.leases.SYN'
-  # templates/ddns_update_stub -> /usr/local/libexec/ddns_update_stub
-  option dhcpscript '/usr/local/libexec/ddns_update_stub'
-  # DNSMASQ_DOMAIN
-  option domain 'home.arpa'
-  # >> Debugging aid
+	# templates/ddns_update_stub.j2 -> /usr/local/libexec/ddns_update_stub
+	option dhcpscript '/usr/local/libexec/ddns_update_stub'
+	# DNSMASQ_DOMAIN
+	option domain 'home.arpa'
+	# >> Debugging aid for development work
 	option logdhcp '1'
 	option logfacility 'AUTH'
 
 config dnsmasq 'dnsmasq_IOT'
-  # !! Disable DNS resolving
-  port 0
 	option leasefile '/tmp/dhcp.leases.IOT'
-  # templates/ddns_update_stub -> /usr/local/libexec/ddns_update_stub
+	# templates/ddns_update_stub.j2 -> /usr/local/libexec/ddns_update_stub
 	option dhcpscript '/usr/local/libexec/ddns_update_stub'
-  # DNSMASQ_DOMAIN
+	# DNSMASQ_DOMAIN
 	option domain 'ha.home.arpa'
-  # >> Debugging aid
-  option logdhcp '1'
+	# >> Debugging aid for development work
+	option logdhcp '1'
 	option logfacility 'AUTH'
 
 config dhcp 'SYN'
 	option interface 'SYN'
 	option limit '64'
-  # >> Debugging aid
-  option leasetime '5m'
+	# >> Debugging aid for development work
+	option leasetime '5m'
+	# >> Normal lease time
+	option leasetime '24h'
 
 config dhcp 'IOT'
 	option interface 'IOT'
 	option limit '16'
-  # >> Debugging aid
+	# >> Debugging aid for development work
 	option leasetime '5m'
+	# >> Normal lease time
+	option leasetime '24h'
 
