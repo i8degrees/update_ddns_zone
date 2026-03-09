@@ -30,7 +30,7 @@ PDNS_API_PORT: 8081
 # >> This is being set in the launch wrapper script on the deployment host;
 # >> you may opt to set it here, instead.
 #PDNS_API_KEY:
-PDNS_API_TTL: 300
+PDNS_API_TTL: 60
 forward-ddns:
   ddns-domains:
     - name: home.arpa
@@ -52,11 +52,13 @@ forward-ddns:
         - name: "ns4.home"
           ip-address: 192.168.12.16
           port: 5300
-    - name: wg.home.arpa
+    - name: iot.ha.home.arpa
       key-name: sw2-axfr
       dns-servers:
-        - ip-address: 192.168.12.15
+        - name: "ns3.home"
+          ip-address: 192.168.12.15
           port: 5300
+        - name: "ns4.home"
         - ip-address: 192.168.12.16
           port: 5300
 reverse-ddns:
@@ -64,23 +66,29 @@ reverse-ddns:
     - name: 12.168.192.in-addr.arpa
       key-name: sw2-axfr
       dns-servers:
-        - ip-address: 192.168.12.15
+        - name: "ns3.home"
+          ip-address: 192.168.12.15
           port: 5300
-        - ip-address: 192.168.12.16
+        - name: "ns4.home"
+          ip-address: 192.168.12.16
+          port: 5300
+    - name: 11.168.192.in-addr.arpa
+      key-name: sw2-axfr
+      dns-servers:
+        - name: "ns3.home"
+          ip-address: 192.168.12.15
+          port: 5300
+        - name: "ns4.home"
+          ip-address: 192.168.12.16
           port: 5300
     - name: 14.168.192.in-addr.arpa
       key-name: sw2-axfr
       dns-servers:
-        - ip-address: 192.168.12.15
+        - name: "ns3.home"
+          ip-address: 192.168.12.15
           port: 5300
-        - ip-address: 192.168.12.16
-          port: 5300
-    - name: 9.168.192.in-addr.arpa
-      key-name: sw2-axfr
-      dns-servers:
-        - ip-address: 192.168.12.15
-          port: 5300
-        - ip-address: 192.168.12.16
+        - name: "ns4.home"
+          ip-address: 192.168.12.16
           port: 5300
 tsig-keys:
   - name: sw2-axfr
