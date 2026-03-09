@@ -4,6 +4,9 @@ from .env import *
 from .log_impl import *
 from .AppConfig import AppConfig
 from .FetchError import FetchError
+import logging
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 # !! This is applicable only when the end-user imports the module with the `*`
 # syntax; `from utils import *`

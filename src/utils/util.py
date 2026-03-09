@@ -21,20 +21,20 @@ from dotenv import dotenv_values
 
 from .parse_boolean import *
 from .env import * # env.py
-from logging import *
+import logging
 from .FetchError import FetchError
 
 env = {
     **os.environ,
     **dotenv_values(".env"),
-    **dotenv_values(".env.dev"),
-    **dotenv_values(".env.prod"),
 }
 
 EXIT_SUCCESS = int(0)
 EXIT_PARAMS: int = errno.EINVAL
 #EXIT_BAD_REQUEST = errno.
 #EXIT_UNPROCESSIBLE_REQUEST = errno.
+
+log = logging.getLogger(__name__)
 
 def reverse_ip(ip_addr) -> str:
     result = str("")
@@ -59,14 +59,13 @@ def _fetch(url: str, headers: list, method: str, body: dict = {}):
     # res.json()
     res = urllib3.request(method=http_method, url=url, headers=request_headers, body=body)
     return res
+
     #if method == "GET":
         #res = requests.get(url, headers=request_headers, data=data)
     #if method == "DELETE":
         #res = requests.delete(url, headers=request_headers, data=data)
     #else: # PATCH
         #res = requests.patch(url, headers=request_headers, data=data)
-
-    return res
 
 # Update the given DNS zone with the given RR and related data.
 #

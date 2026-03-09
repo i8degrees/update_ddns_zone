@@ -4,14 +4,20 @@ import errno
 import json
 import os
 import sys
-from dotenv import dotenv_values
+
 from typing import Final # type: ignore
 from utils import *
+
+import logging
+from dotenv import dotenv_values
 
 env = {
     **os.environ,
     **dotenv_values(".env"),
 }
+
+
+log = logging.getLogger('ddns_psupdate')
 
 # !! Replace env.setdefault with the following:
 #env["DEBUG"] = get_env("DEBUG", "")
@@ -23,6 +29,17 @@ env.setdefault("DEBUG", "")
 env.setdefault("DEBUG_TRACE", "")
 env.setdefault("VERBOSE", "")
 env.setdefault("SYSLOG", "")
+env.setdefault("LOG_FILE", "")
+
+if env and get_env_bool(env["DEBUG"]) == True:
+  # !! Set the default handler to stdout
+  log.setLevel(logging.DEBUG)
+
+log.debug(f'DEBUG={env["DEBUG"]}')
+log.debug(f'DEBUG_TRACE={env["DEBUG_TRACE"]}')
+log.debug(f'VERBOSE={env["VERBOSE"]}')
+log.debug(f'SYSLOG={env["SYSLOG"]}')
+log.debug(f'LOG_FILE={env["LOG_FILE"]}')
 
 # !! This env variable must be set in a shell wrapper script for production
 # use. The default value suffices only for development usage and only when
@@ -41,7 +58,6 @@ if config.get("PDNS_API_KEY") != None:
     PDNS_API_KEY = config["PDNS_API_KEY"]
 else:
     PDNS_API_KEY = get_env("PDNS_API_KEY", "")
-
 assert PDNS_API_KEY != "", "The PDNS_API_KEY (X-API-Key) must be initialized."
 
 PDNS_API_VERSION: str = ""
@@ -55,7 +71,7 @@ assert PDNS_API_VERSION != "", "PDNS_API_VERSION must be initialized"
 PDNS_CHANGE_TYPE: Final[str] = "REPLACE"
 
 # ?? TODO(JEFF): Use the enhanced EXTEND API when PDNS Auth server is newer
-# ?? than 4.8.4; I am limited to v4.8.4 API until I upgrade the auth server 
+# ?? than 4.8.4; I am limited to v4.8.4 API until I upgrade the auth server
 # on my end.
 # >> SEE ALSO
 # >> 1. https://doc.powerdns.com/authoritative/http-api/zone.html#adding-a-single-record-to-a-rrset
@@ -67,12 +83,10 @@ PDNS_API_URL: Final[str] = config["PDNS_API_PROTO"] + "://" + \
     config["PDNS_API_HOST"] \
 + ":" + str(config["PDNS_API_PORT"])
 
-log_debug("ddns_update", "Using v" + PDNS_API_VERSION + " PDNS Auth API")
-print("DEBUG=" + env["DEBUG"])
-print("DEBUG=" + env["DEBUG_TRACE"])
-print("VERBOSE=" + env["VERBOSE"])
-print("SYSLOG=" + env["SYSLOG"])
+log.debug(f'Using v{PDNS_API_VERSION} PDNS Auth API')
 
+# !! Replace with argparse
+# >> See `src/test/argparser.py`
 def usage_info(name: str, exit_code: int):
   script_name = str(name)
   code = int(exit_code)
@@ -94,8 +108,6 @@ def usage_info(name: str, exit_code: int):
 
 def main() -> None:
   args = sys.argv
-  num_args = len(args)
-  log_debug("ddns_update", "num_args:" + str(num_args))
 
   # !! IMPORTANT(JEFF): DNSMASQ_DOMAIN is a required environment variable of which is
   # only passed to this script when the end-user has dnsmasq configured with
@@ -122,15 +134,20 @@ def main() -> None:
     # !! IMPORTANT(JEFF): This is required for the REST endpoint data input for PTR
     # !! zone updates
     DNSUPDATE_ZONE_PTR = "12.168.192.in-addr.arpa."
-    #DNSUPDATE_ZONE_PTR = canonical_dns_name("home.arpa.168.192.in-addr.arpa")
+    #DNSUPDATE_ZONE_PTR = canonical_dns_name("12.168.192.in-addr.arpa")
   elif DNSMASQ_DOMAIN == canonical_dns_name("ha.home.arpa"):
     # !! IMPORTANT(JEFF): This is required for the REST endpoint data input for PTR
     # !! zone updates
+    DNSUPDATE_ZONE_PTR = "11.168.192.in-addr.arpa."
+    #DNSUPDATE_ZONE_PTR = canonical_dns_name("11.168.192.in-addr.arpa")
+  elif DNSMASQ_DOMAIN == canonical_dns_name("iot.ha.home.arpa"):
+    # !! IMPORTANT(JEFF): This is required for the REST endpoint data input for PTR
+    # !! zone updates
     DNSUPDATE_ZONE_PTR = "14.168.192.in-addr.arpa."
-    #DNSUPDATE_ZONE_PTR = canonical_dns_name("ha.home.arpa.168.192.in-addr.arpa")
+    #DNSUPDATE_ZONE_PTR = canonical_dns_name("14.168.192.in-addr.arpa")
 
-  print("DNSMASQ_DOMAIN:", DNSMASQ_DOMAIN)
-  print("DNSUPDATE_ZONE_PTR:", DNSUPDATE_ZONE_PTR)
+  log.debug(f'DNSMASQ_DOMAIN: {DNSMASQ_DOMAIN}')
+  log.debug(f'DNSUPDATE_ZONE_PTR: {DNSUPDATE_ZONE_PTR}')
 
   # !! Required argument
   try:
