@@ -3,5 +3,8 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"settings": {
+		"ansible.python.interpreterPath": "./.venv/bin/python"
+	}
 }
