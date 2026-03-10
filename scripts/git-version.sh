@@ -1,7 +1,14 @@
 #!/bin/sh
 #
 #
+# shellcheck shell=sh
 #
 
-git rev-parse --short HEAD
+ARGS="$1"
+
+if [ -n "$ARGS" ]; then
+  git rev-parse HEAD
+else
+  git rev-parse --short HEAD
+fi
 
