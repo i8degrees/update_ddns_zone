@@ -4,8 +4,9 @@ from .env import *
 from .log_impl import *
 from .AppConfig import AppConfig
 from .FetchError import FetchError
-import logging
+from .version import __version__ #git_revision_short_hash, git_revision_hash
 
+import logging
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 # !! This is applicable only when the end-user imports the module with the `*`
@@ -30,6 +31,6 @@ __all__ = [
   'verbose_debug',
   'debug_trace',
   'AppConfig',
-  'FetchError'
+  'FetchError',
+  '__version__',
 ]
-
