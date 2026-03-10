@@ -3,17 +3,15 @@ import os
 import argparse
 from utils import __version__
 
-#PROG_NAME = __main__
 PROG_NAME = 'ddns_psupdate'
 PROG_VERSION = '%(prog)s 1.0.0'
 # ?? import utils for __version__ def
 PROG_VERSION = '%(prog)s ' + __version__
-#DESCRIPTION = 'usage text'
 DESCRIPTION = 'Update DNS upon DHCP lease'
 DEFAULT_LOG_LEVELS = ["DEBUG", "NOTICE", "INFO", "WARNING", "CRITICAL", "ERROR"]
 DEFAULT_CONFIG_FILE_PATH = "config/app.yml"
 DEFAULT_LOG_LEVEL = 'INFO'
-#DEBUG = os.environ.get("DEBUG", False)
+DEBUG = False
 DEFAULT_CMD_OPTS = ["ADD", "OLD", "DEL"]
 
 parser = \

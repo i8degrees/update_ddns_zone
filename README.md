@@ -16,6 +16,11 @@ tags:
 
 ## usage
 
+```shell
+DNSMASQ_DOMAIN=test.home.arpa ddns_update ADD c2:b9:8f:da:1b:00 127.0.0.1 host
+DNSMASQ_DOMAIN=test.home.arpa ddns_update OLD c2:b9:8f:da:1b:00 127.0.0.1 host
+DNSMASQ_DOMAIN=test.home.arpa ddns_update DEL c2:b9:8f:da:1b:00 127.0.0.1 host
+```
 ### development
 
 
