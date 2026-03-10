@@ -17,23 +17,73 @@ env = {
 
 log = logging.getLogger('ddns_psupdate')
 
-env.setdefault("DEBUG", "")
+app = None
 
-if env and get_env_bool(env["DEBUG"]) == True:
-  # !! Set the default handler to stdout
+PROG_NAME = 'ddns_psupdate'
+PROG_VERSION = '%(prog)s 1.0.0'
+# ?? import utils for __version__ def
+PROG_VERSION = '%(prog)s ' + __version__
+DESCRIPTION = 'Update DNS upon DHCP lease'
+DEFAULT_LOG_LEVELS = ["DEBUG", "NOTICE", "INFO", "WARNING", "CRITICAL", "ERROR"]
+DEFAULT_CONFIG_FILE_PATH = "config/app.yml"
+DEFAULT_LOG_LEVEL = 'INFO'
+DEBUG = False
+DEFAULT_CMD_OPTS = ["ADD", "OLD", "DEL"]
+
+parser = \
+    argparse.ArgumentParser(prog=PROG_NAME, description=DESCRIPTION)
+parser.add_argument("CMD", help=f'Command is one of {DEFAULT_CMD_OPTS}')
+parser.add_argument("MAC_ADDR",
+                    help="The 48-bit link-layer address")
+parser.add_argument("IP_ADDR", type=str,
+                    help="Client IPv4 address")
+parser.add_argument("HOSTNAME", type=str,
+                    help="Client's (short) hostname")
+parser.add_argument("-c", "--config", default=DEFAULT_CONFIG_FILE_PATH,
+                    help=f"The file path to the configuration file")
+parser.add_argument("-d", "--debug", action="store_true",
+                    help="Enable debugging code")
+parser.add_argument("-l", "--log", default=DEFAULT_LOG_LEVEL,
+    help=f'Set the log level to one of {DEFAULT_LOG_LEVELS}')
+parser.add_argument("-v", "--version", action="version", version=PROG_VERSION)
+
+args = parser.parse_args()
+DEBUG = bool(args.debug)
+LOG_LEVEL = DEFAULT_LOG_LEVEL
+if args.log.upper() in DEFAULT_LOG_LEVELS:
+    LOG_LEVEL = args.log.upper()
+CMD = args.CMD.lower()
+MAC_ADDR = args.MAC_ADDR
+IP_ADDR = args.IP_ADDR
+HOSTNAME = args.HOSTNAME
+APP_CONFIG = args.config
+
+if APP_CONFIG:
+    if not (os.path.isfile(APP_CONFIG) and os.access(APP_CONFIG, os.R_OK)):
+      print(f"ERROR: The given file path at {args.config} does not exist.")
+      exit(1)
+    else:
+       print(f"Found configuration file at {APP_CONFIG}")
+       app = AppConfig(APP_CONFIG)
+
+if LOG_LEVEL == "DEBUG":
   log.setLevel(logging.DEBUG)
+elif LOG_LEVEL == "NOTICE":
+  log.setLevel(logging.NOTICE)
+elif LOG_LEVEL == "INFO":
+  log.setLevel(logging.INFO)
+elif LOG_LEVEL == "WARNING":
+  log.setLevel(logging.WARNING)
+elif LOG_LEVEL == "CRITICAL":
+  log.setLevel(logging.CRITICAL)
+elif LOG_LEVEL == "ERROR":
+  log.setLevel(logging.ERROR)
 
-log.debug(f'DEBUG={env["DEBUG"]}')
-
-# !! This env variable must be set in a shell wrapper script for production
-# use. The default value suffices only for development usage and only when
-# this script is executed from the top-level root of the git repo.
-APP_CONFIG = \
-    get_env("DDNS_UPDATE_CONFIG", "config/app.yml")
-
-app = AppConfig(APP_CONFIG)
+print(LOG_LEVEL)
+if DEBUG == True:
+  print("DEBUGGING is on")
+  
 config = app.dump()
-assert config != None, "The app configuration path must be set."
 
 # !! This is ultimately left up to the end-user to decide of which they wish
 # to do; this must be set in either case.
@@ -67,8 +117,6 @@ PDNS_API_URL: Final[str] = config["PDNS_API_PROTO"] + "://" + \
     config["PDNS_API_HOST"] \
 + ":" + str(config["PDNS_API_PORT"])
 
-log.debug(f'Using v{PDNS_API_VERSION} PDNS Auth API')
-
 def main() -> None:
   args = sys.argv
 
@@ -83,8 +131,8 @@ def main() -> None:
     canonical_dns_name(get_env("DNSUPDATE_ZONE_PTR", ""))
 
   # >> NOTE(JEFF): This is for our convenience during development of this script.
-  if not get_env("DNSMASQ_DOMAIN", "") and parse_boolean(env["DEBUG"]) == True:
-    DNSMASQ_DOMAIN = canonical_dns_name("test.home.arpa")
+  #if not get_env("DNSMASQ_DOMAIN", "") and DEBUG == True:
+    #DNSMASQ_DOMAIN = canonical_dns_name("test.home.arpa")
 
   DNSUPDATE_ZONE_PTR: Final[str|None] = None
 
@@ -108,55 +156,27 @@ def main() -> None:
     # !! zone updates
     DNSUPDATE_ZONE_PTR = "14.168.192.in-addr.arpa."
     #DNSUPDATE_ZONE_PTR = canonical_dns_name("14.168.192.in-addr.arpa")
-  elif DNSMASQ_DOMAIN == canonical_dns_name("test.home.arpa"):
-    DNSUPDATE_ZONE_PTR = None
   
   log.debug(f'DNSMASQ_DOMAIN: {DNSMASQ_DOMAIN}')
   log.debug(f'DNSUPDATE_ZONE_PTR: {DNSUPDATE_ZONE_PTR}')
-
-  # !! Required argument
-  try:
-    # ?? TODO(JEFF): Rename AOD to DNSMASQ_CMD
-    AOD = args[1].lower() # (ADD|OLD|DEL)
-  except IndexError:
-    log.critical("Missing script argument AOD")
-    sys.exit(EXIT_PARAMS)
   
   # !! Required argument
   # >> DNSMASQ may pass DUID made of the link layer *...* instead of
   # >> See man 8 dnsmasq
   # >> RFC XXX
-  try:
-    # ?? TODO(JEFF): Rename MAC to MAC_ADDRESS
-    MAC = str(args[2])
-  except IndexError:
-    log.critical("Missing script argument MAC")
-    sys.exit(EXIT_PARAMS)
+    
+  PTR = reverse_ip(IP_ADDR)
+  RIP = f'{PTR}.in-addr.arpa.'
+  #RIP = f'{PTR}.{DNSUPDATE_ZONE_PTR}'
+  #L_HOSTNAME = short_hostname(str(args[4]))
+  L_HOSTNAME = short_hostname(HOSTNAME)
+  FQDN = canonical_dns_name(L_HOSTNAME) + canonical_dns_name(str(DNSMASQ_DOMAIN))
+  log.debug(f'FQDN:{FQDN}')
   
-  # !! Required argument
-  try:
-    IP_ADDR = str(args[3])
-    PTR = reverse_ip(IP_ADDR)
-    RIP = f'{PTR}.in-addr.arpa.'
-    #RIP = f'{PTR}.{DNSUPDATE_ZONE_PTR}'
-  except IndexError:
-    log.critical("Missing script argument IP_ADDR")
-    sys.exit(EXIT_PARAMS)
-  
-  # !! Required argument
-  try:
-    L_HOSTNAME = short_hostname(str(args[4]))
-    FQDN = canonical_dns_name(L_HOSTNAME) + canonical_dns_name(str(DNSMASQ_DOMAIN))
-    log.debug(f'FQDN:{FQDN}')
-  except IndexError:
-    log.critical("Missing script argument HOSTNAME")
-    sys.exit(EXIT_PARAMS)
-  
-  assert MAC != "", "MAC must be a given argument to script"
+  assert MAC_ADDR != "", "MAC must be a given argument to script"
   assert IP_ADDR != "", "IP_ADDR must be a given argument to script"
   assert L_HOSTNAME != "", "L_HOSTNAME must be a given argument to script"
   assert FQDN != "", "FQDN must be a given argument to script"
-
 
   PDNS_API_URL_SUFFIX = \
       "/api/v1/servers/localhost/zones"
@@ -185,7 +205,7 @@ def main() -> None:
       "records": [{
         # ?? TODO(JEFF): Lookup function for escaping this input; the REST endpoint
         # ?? requires this particular RR type to always have quotes surrounding it.
-        "content": f'"{MAC}"',
+        "content": f'"{MAC_ADDR}"',
         "disabled": False
       }]
     }]
@@ -209,16 +229,16 @@ def main() -> None:
   FULL_REQUEST_URL = PDNS_API_URL + PDNS_API_URL_SUFFIX
 
   try:
-    if AOD != "add" and AOD != "old" and AOD != "del":
+    if CMD != "add" and CMD != "old" and CMD != "del":
       raise ValueError
   except ValueError:
-    log.critical("AOD must be one of: (ADD|OLD|DEL).")
+    log.critical("CMD must be one of: (ADD|OLD|DEL).")
     exit(EXIT_PARAMS)
   
   # !! Lease registration or renewal
-  if AOD == "add" or AOD == "old":
+  if CMD == "add" or CMD == "old":
     # >> NOTE(JEFF): The LOG_STR is purely for visual aid in log output
-    LOG_STR = AOD
+    LOG_STR = CMD
     if LOG_STR == "old":
       LOG_STR = "RENEW"
     elif LOG_STR == "add":
@@ -244,7 +264,7 @@ def main() -> None:
         exit(res.status_code())
 
   # !! Lease release
-  elif AOD == "del":
+  elif CMD == "del":
     # >> NOTE(JEFF): The LOG_STR is purely for visual aid in log output
     LOG_STR="RELEASE"
     
