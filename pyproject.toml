@@ -9,10 +9,10 @@ requires-python = ">=3.11"
 name = "update_ddns_zone"
 version = "1.0.0"
 description = "DDNS DHCP update integration with DNSMASQ"
-readme = "README.md"
-#license = "BSD"
-license = { file = "LICENSE.md" }
+readme = { file = "README.md", content-type="text/markdown" }
+license = { file = "LICENSE.md", content-type="text/markdown" }
 authors = [{ name = "Jeffrey Carpenter", email = "1329364+i8degrees@users.noreply.github.com" }]
+maintainers = [{ name = "Jeffrey Carpenter", email = "1329364+i8degrees@users.noreply.github.com" }]
 keywords = [ "ddns", "dhcp", "dnsmasq", "powerdns", "pdns" ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -49,9 +49,8 @@ dev = [
 
 [project.urls]
 "Homepage" = "https://github.com/i8degrees/update_ddns_zone.git"
-"Bug Reports" = "https://github.com/i8degrees/update_ddns_zone.git"
-"Source" = "https://github.com/i8degrees/update_ddns_zone.git"
-"Documentation" = "https://github.com/i8degrees/update_ddns_zone.git"
+"Issues" = "https://github.com/i8degrees/update_ddns_zone.git"
+"Repository" = "https://github.com/i8degrees/update_ddns_zone.git"
 
 [project.scripts]
 ddns_update = "app.__main__:main"

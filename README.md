@@ -20,9 +20,11 @@ tags:
 
 
 ```shell
-python3 -m build
 python3 -m venv .venv
+.venv/bin/python3 -m pip install build
+.venv/bin/python3 -m build
 pip install -r requirements.txt
+pip install -e ddns_update[dev]
 pip install -e .
 # build dist packages and upload to host for dev deployment
 scripts/build.sh
