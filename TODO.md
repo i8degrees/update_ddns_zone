@@ -16,7 +16,7 @@ Please file bugs, feature requests, patches and such to the official
 
 ## general
 
-- [ ] ...
+- [ ] finish phasing out use of `dotenv` and `dotenv[cli]`
 
 [0]: https://github.com/i8degrees/update_ddns_zone/issues
 
