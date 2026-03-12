@@ -36,29 +36,22 @@ forward-ddns:
     - name: home.arpa
       key-name: sw2-axfr
       dns-servers:
-        # The name field is only used as a visual debugging aid
-        - name: "ns3.home"
-          ip-address: 192.168.12.15
+        - ip-address: 192.168.12.15
           port: 5300
-        - name: "ns4.home"
-          ip-address: 192.168.12.16
+        - ip-address: 192.168.12.16
           port: 5300
     - name: ha.home.arpa
       key-name: sw2-axfr
       dns-servers:
-        - name: "ns3.home"
-          ip-address: 192.168.12.15
+        - ip-address: 192.168.12.15
           port: 5300
-        - name: "ns4.home"
-          ip-address: 192.168.12.16
+        - ip-address: 192.168.12.16
           port: 5300
     - name: iot.ha.home.arpa
       key-name: sw2-axfr
       dns-servers:
-        - name: "ns3.home"
-          ip-address: 192.168.12.15
+        - ip-address: 192.168.12.15
           port: 5300
-        - name: "ns4.home"
         - ip-address: 192.168.12.16
           port: 5300
 reverse-ddns:
@@ -66,29 +59,23 @@ reverse-ddns:
     - name: 12.168.192.in-addr.arpa
       key-name: sw2-axfr
       dns-servers:
-        - name: "ns3.home"
-          ip-address: 192.168.12.15
+        - ip-address: 192.168.12.15
           port: 5300
-        - name: "ns4.home"
-          ip-address: 192.168.12.16
+        - ip-address: 192.168.12.16
           port: 5300
     - name: 11.168.192.in-addr.arpa
       key-name: sw2-axfr
       dns-servers:
-        - name: "ns3.home"
-          ip-address: 192.168.12.15
+        - ip-address: 192.168.12.15
           port: 5300
-        - name: "ns4.home"
-          ip-address: 192.168.12.16
+        - ip-address: 192.168.12.16
           port: 5300
     - name: 14.168.192.in-addr.arpa
       key-name: sw2-axfr
       dns-servers:
-        - name: "ns3.home"
-          ip-address: 192.168.12.15
+        - ip-address: 192.168.12.15
           port: 5300
-        - name: "ns4.home"
-          ip-address: 192.168.12.16
+        - ip-address: 192.168.12.16
           port: 5300
 tsig-keys:
   - name: sw2-axfr
