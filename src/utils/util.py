@@ -254,27 +254,6 @@ def canonical_dns_name(hostname: str, omit_final_dot:bool = False) -> str:
       name = name.rstrip(".")
     return name
 
-###
-
-def delete_record_new(rrset: dict) -> int:
-    fqdn: str = canonical_dns_name(rrset.get("fqdn"))
-    type: Enum = rrset.get("type")
-    record: str = rrset.get("record")
-    disabled: bool = rrset.get("disabled")
-    response = namedtuple("response", "code")
-    response.code = 0
-    
-    if not fqdn or len(fqdn) < 1:
-        response.code = 1
-    if not type:
-        response.code = 2
-    if not record or len(record) < 1:
-        response.code = 3
-    if bool(disabled) == True:
-        response.code = 4
-
-    return response
-
 #RRset = dict({ fqdn: "", rr_type = "", ttl = 60, record = "" })
 def update_record_new(url: str, zone: str, api_key: str, RRset: dict) -> int:
     request_headers = {
