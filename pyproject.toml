@@ -10,14 +10,13 @@ name = "update_ddns_zone"
 version = "1.0.0"
 description = "DDNS DHCP update integration with DNSMASQ"
 readme = { file = "README.md", content-type="text/markdown" }
-license = { file = "LICENSE.md", content-type="text/markdown" }
+license = { file = "LICENSE.md" }
 authors = [{ name = "Jeffrey Carpenter", email = "1329364+i8degrees@users.noreply.github.com" }]
 maintainers = [{ name = "Jeffrey Carpenter", email = "1329364+i8degrees@users.noreply.github.com" }]
 keywords = [ "ddns", "dhcp", "dnsmasq", "powerdns", "pdns" ]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
-    "Intended Audience :: Developers",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
