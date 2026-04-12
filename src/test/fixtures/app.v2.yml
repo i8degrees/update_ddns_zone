@@ -1,0 +1,75 @@
+# config/app.yml
+#
+# one or more nameservers must be specified for script operation; leaving it
+# un-initialized will effectively terminate the core script functionality
+# beyond early init
+#
+# tsig_keys are optional
+#
+# there must be at least one of `forward-zones` `reverse-zones`
+#
+# not supplying one (or more) reverse-zones implies skipping
+# PTR RR records changes in the main script loop
+#
+# not supplying one (or more) forward-zones implies skipping
+# RR records changes in the main script loop
+---
+
+version: 2
+
+forward-ddns:
+  domains:
+    - name: home.arpa # 255 chars (approx)
+      key-name: pdns-api # (sw2-axfr|pdns_auth); ref ID to api-keys[0].name
+      protocol: "http" # (http|https|tsig)
+      # IMPORTANT(JEFF): This field should be set (not None) when the 
+      # protocol is https.
+      certificate: None # NOTE(JEFF): (None|path|PEM encoded certificate)
+      ttl: 60 # optional; defaults to 60
+      dns-servers:
+        - host: 192.168.12.15 # hostname or IP addr
+          port: 8081 # defaults to 53
+          version: "4.8.4" # defaults to 4.8
+        - host: 192.168.12.16
+          port: 8081
+          version: "4.8.4"
+    - name: ha.home.arpa
+      key-name: pdns-api # ref ID to api-keys[0].name
+      protocol: "http" # (http|https|tsig)
+      certificate: None
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 5300
+        - ip-address: 192.168.12.16
+          port: 5300
+reverse-ddns:
+  domains:
+    - name: 12.168.192.in-addr.arpa
+      key-name: pdns_api # ref ID to api-keys[0].name
+      protocol: "http" # (http|https|tsig); defaults to http
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 8081
+        - ip-address: 192.168.12.16
+          port: 8081
+    - name: 14.168.192.in-addr.arpa
+      key-name: pdns-api # ref ID to api-keys[0].name
+      protocol: "http" # (http|https|tsig); defaults to http      dns-servers:
+      dns-servers:
+        - ip-address: 192.168.12.15
+          port: 8081
+        - ip-address: 192.168.12.16
+          port: 8081
+tsig-keys:
+  - name: sw2-axfr # 255 chars
+    algorithm: hmac-sha256
+    secret: xxx # 255 chars (approx)
+  - name: tsig-dummy-key # 255 chars
+    algorithm: md5 # (md5|sha256|sha512|...)
+    secret: xxx # 255 chars (approx)
+api-keys:
+  - name: pdns-api # 255 chars
+    algo: xxx # (hash|plain)
+    secret: "xxx" # 255 chars (approximate)
+global-config:
+  api_host: ns4

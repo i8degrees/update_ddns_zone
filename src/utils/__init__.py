@@ -1,10 +1,12 @@
 from .parse_boolean import parse_boolean
+#from .util import update_record, delete_record,
 from .util import *
 from .env import *
 from .log_impl import *
 from .AppConfig import AppConfig
 from .FetchError import FetchError
 from .version import __version__ #git_revision_short_hash, git_revision_hash
+from .types import RRType, FQDN, IPHost, RR_A, RR_TXT, RR_PTR, RRset
 
 import logging
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -33,4 +35,12 @@ __all__ = [
   'AppConfig',
   'FetchError',
   '__version__',
+  #'strclass',
+  'RRType',
+  'FQDN',
+  'IPHost',
+  'RR_A',
+  'RR_TXT',
+  'RR_PTR',
+  'RRset',
 ]

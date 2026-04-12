@@ -107,35 +107,35 @@ PDNS_API_URL: Final[str] = config["PDNS_API_PROTO"] + "://" + \
 
 #print(app.lookup_forward("iot.ha.home.arpa"))
 
-def main() -> None:
-  #args = sys.argv
-
-  DNSMASQ_LOG_DHCP = \
+DNSMASQ_LOG_DHCP = \
     get_env("DNSMASQ_LOG_DHCP", False)
-  if DNSMASQ_LOG_DHCP and bool(DNSMASQ_LOG_DHCP) == True:
+if DNSMASQ_LOG_DHCP and bool(DNSMASQ_LOG_DHCP) == True:
     print("Verbose DHCP logging is enabled.")
     log.setLevel(9);
-  elif not (DNSMASQ_LOG_DHCP and DNSMASQ_LOG_DHCP == False):
-   print("Verbose DHCP logging has not been requested.");
+elif not (DNSMASQ_LOG_DHCP and DNSMASQ_LOG_DHCP == False):
+    print("Verbose DHCP logging has not been requested.")
 
-  DNSMASQ_TAGS = \
+DNSMASQ_TAGS = \
     get_env("DNSMASQ_TAGS", "")
-  if DNSMASQ_TAGS and len(DNSMASQ_TAGS) > 0:
-    printf("DNSMASQ_TAGS=%s\n", DNSMASQ_TAGS)
+if DNSMASQ_TAGS and len(DNSMASQ_TAGS) > 0:
+    print("DNSMASQ_TAGS=f{DNSMASQ_TAGS}")
 
-  DNSMASQ_INTERFACE = \
-     get_env("DNSMASQ_INTERFACE", "")
-  if DNSMASQ_INTERFACE and len(DNSMASQ_INTERFACE) > 0:
-    printf("DNSMASQ_INTERFACE=%s\n", DNSMASQ_INTERFACE)
+DNSMASQ_INTERFACE = \
+    get_env("DNSMASQ_INTERFACE", "")
+if DNSMASQ_INTERFACE and len(DNSMASQ_INTERFACE) > 0:
+    print("DNSMASQ_INTERFACE=f{DNSMASQ_INTERFACE}")
 
-  # >> This env is set to "1" (True) during "old" events and signifies to 
-  # >> us -- at the very minimum -- that we do not need to iterate through
-  # >> the main loop as there is nothing to be done.
-  DNSMASQ_DATA_MISSING = \
-     get_env("DNSMASQ_DATA_MISSING", False)
-  if DNSMASQ_DATA_MISSING and bool(DNSMASQ_DATA_MISSING) == True:
+# >> This env is set to "1" (True) during "old" events and signifies to 
+# >> us -- at the very minimum -- that we do not need to iterate through
+# >> the main loop as there is nothing to be done.
+DNSMASQ_DATA_MISSING = \
+    get_env("DNSMASQ_DATA_MISSING", False)
+if DNSMASQ_DATA_MISSING and bool(DNSMASQ_DATA_MISSING) == True:
     print("DNSMASQ_DATA_MISSING=1\nExiting...\n")
     #sys.exit(0);
+
+def main() -> None:
+  #args = sys.argv
 
   # !! IMPORTANT(JEFF): DNSMASQ_DOMAIN is a required environment variable of which is
   # only passed to this script when the end-user has dnsmasq configured with
@@ -218,6 +218,7 @@ def main() -> None:
       }]
     }]
   }
+  #RRset request(RRType.DHCID_RECORD, name=FQDN, content=HASH)
 
   RR_TYPE_TXT_REQUEST = {
     "rrsets": [{
@@ -267,25 +268,38 @@ def main() -> None:
       LOG_STR = "RENEW"
     elif LOG_STR == "add":
       LOG_STR = "NEW"
-      
-    print(f'{LOG_STR} RR_TYPE_A_REQUEST:{json.dumps(RR_TYPE_A_REQUEST)}')
+
+    #RRset request(RRType.A_RECORD, name=FQDN, content=IP_ADDR)
+    #request.json()
+    if bool(DNSMASQ_LOG_DHCP) == True:
+        print(f'{LOG_STR} RR_TYPE_A_REQUEST:{json.dumps(RR_TYPE_A_REQUEST)}')
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST)
-    print(res.message())
+    if bool(DNSMASQ_LOG_DHCP) == True:
+        print(res.message())
     if res.status_code() != 204:
-      exit(res.status_code())
-    
-    print(f'{LOG_STR} RR_TYPE_TXT_REQUEST:{json.dumps(RR_TYPE_TXT_REQUEST)}')
+        exit(res.status_code())
+
+    #RRset request(RRType.TXT_RECORD, name=FQDN, content=MAC_ADDR)
+    #request.json()
+    if bool(DNSMASQ_LOG_DHCP) == True:
+        print(f'{LOG_STR} RR_TYPE_TXT_REQUEST:{json.dumps(RR_TYPE_TXT_REQUEST)}')
+
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST)
-    print(res.message())
+    if bool(DNSMASQ_LOG_DHCP) == True:
+        print(res.message())
     if res.status_code() != 204:
-      exit(res.status_code())
+        exit(res.status_code())
     
     if DNSUPDATE_ZONE_PTR != None:
-      print(f'{LOG_STR} RR_TYPE_PTR_REQUEST:{json.dumps(RR_TYPE_PTR_REQUEST)}')
-      res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST)
-      print(res.message())
-      if res.status_code() != 204:
-        exit(res.status_code())
+        #RRset request(RRType.PTR_RECORD, name=RIP, content=FQDN)
+        #request.json()
+        if bool(DNSMASQ_LOG_DHCP) == True:
+            print(f'{LOG_STR} RR_TYPE_PTR_REQUEST:{json.dumps(RR_TYPE_PTR_REQUEST)}')
+        res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST)
+        if bool(DNSMASQ_LOG_DHCP) == True:
+            print(res.message())
+        if res.status_code() != 204:
+            exit(res.status_code())
 
   # !! Lease release
   elif CMD == "del":
@@ -295,20 +309,24 @@ def main() -> None:
     RR_TYPE_A_REQUEST_DEL = RR_TYPE_A_REQUEST
     RR_TYPE_A_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
     RR_TYPE_A_REQUEST_DEL["rrsets"][0]["ttl"] = None
-    print(f'{LOG_STR} RR_TYPE_A_REQUEST_DEL:{json.dumps(RR_TYPE_A_REQUEST_DEL)}')
+    if bool(DNSMASQ_LOG_DHCP) == True:
+        print(f'{LOG_STR} RR_TYPE_A_REQUEST_DEL:{json.dumps(RR_TYPE_A_REQUEST_DEL)}')
     
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST_DEL)
-    print(res.status_message())
+    if bool(DNSMASQ_LOG_DHCP) == True:
+        print(res.status_message())
     if res.status_code() != 204:
       exit(res.status_code())
 
     RR_TYPE_TXT_REQUEST_DEL = RR_TYPE_TXT_REQUEST
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["ttl"] = None
-    print(f'{LOG_STR} RR_TYPE_TXT_REQUEST_DEL:{json.dumps(RR_TYPE_TXT_REQUEST_DEL)}')
+    if bool(DNSMASQ_LOG_DHCP) == True:
+        print(f'{LOG_STR} RR_TYPE_TXT_REQUEST_DEL:{json.dumps(RR_TYPE_TXT_REQUEST_DEL)}')
 
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST_DEL)
-    print(res.status_message())
+    if bool(DNSMASQ_LOG_DHCP) == True:
+        print(res.status_message())
     if res.status_code() != 204:
       exit(res.status_code())
     
@@ -316,9 +334,12 @@ def main() -> None:
       RR_TYPE_PTR_REQUEST_DEL = RR_TYPE_PTR_REQUEST
       RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
       RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["ttl"] = None
-      print(f'{LOG_STR} RR_TYPE_PTR_REQUEST_DEL:{json.dumps(RR_TYPE_PTR_REQUEST_DEL)}')
-    
+      if bool(DNSMASQ_LOG_DHCP) == True:
+        print(f'{LOG_STR} RR_TYPE_PTR_REQUEST_DEL:{json.dumps(RR_TYPE_PTR_REQUEST_DEL)}')
+
       res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST_DEL)
-      print(res.status_message())
+      if bool(DNSMASQ_LOG_DHCP) == True:
+          print(res.status_message())
       if res.status_code() != 204:
         exit(res.status_code())
+

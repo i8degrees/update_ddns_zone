@@ -13,13 +13,27 @@ from utils.log_impl import *
 def canonical_name(ip_addr: str|list, omit_final_dot:bool = False) -> str:
     name = str(ip_addr)
     name_len = len(name)
-    
+
     name_dot = name.rfind(".")
     if name_dot < (name_len - 1) and omit_final_dot == False:
         name += "."
     elif name.endswith(".") and omit_final_dot == True:  
         name = name.rstrip(".")
     return name
+
+def hash(label: str) -> int:
+    """Return a case-insensitive hash of the name.
+
+    Returns an ``int``.
+    """
+
+    labels: str = label
+
+    h = 0
+    for label in labels:
+        for c in label.lower():
+            h += (h << 3) + c
+    return h
 
 DEBUG_TRACE = os.environ.get("DEBUG_TRACE")
 print("DEBUG_TRACE:", DEBUG_TRACE)
@@ -39,11 +53,11 @@ print("DEBUG_TRACE:", DEBUG_TRACE)
 
 print("\n...unused (original) canonical DNS name tests...\n")
 
-name_label = ""
+name_label = "."
 res = canonical_name(name_label, False)
 print("canonical_name; zero length w/o dot:", res)
 
-name_label = ""
+name_label = "."
 res = canonical_name(name_label, True)
 print("canonical_name; zero length w/ dot:", res)
 
@@ -118,4 +132,15 @@ assert assert_res == assert_answer, assert_message
 hostname = ""
 assert_res = short_hostname(hostname)
 assert assert_res == "", "hostname must remain zero-length"
+
+hostname = ""
+assert_res = short_hostname(hostname)
+assert assert_res == "", "hostname must remain zero-length"
+
+#hostname = short_hostname("scorpio.home.arpa")
+#assert_res = hash(["scorpio", "home", "arpa"])
+# ?? FIXME
+#assert_res = hash(hostname)
+#print(assert_res)
+#assert assert_res == assert_answer, assert_message
 

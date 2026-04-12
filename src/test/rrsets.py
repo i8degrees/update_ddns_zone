@@ -30,19 +30,23 @@ class FQDN:
   def short_hostname() -> str:
     return short_hostname(host)
   
-  def __init__(hostname: str) -> None:
+  def __init__(self, hostname: str) -> None:
     self.host = canonical_dns_name(hostname)
   
 class IPHost:
-  host: str # FQDN class type
-  ip_addr: list # 4 octets
+  #host: str # FQDN class type
+  #ip_addr: list # 4 octets
   
-  def init(hostname: str, ipaddr: str) -> None:
-    host = short_hostname(hostname)
-    ip_addr = ipaddr.split()
+  def __init__(self, hostname: str, ipaddr: str) -> None:
+    self.host = short_hostname(hostname)
+    if type(ipaddr) == list:
+        self.ip_addr = ipaddr.split()
+    else:
+        self.ip_addr = ipaddr
 
 class RRset_A:
-  IPHost("192.168.12.150")
+  IPHost(hostname="scorpio", ipaddr="192.168.12.150")
+  #IPHost(ipaddr="192.168.12.150")
   FQDN("scorpio.home.arpa")
   
 class RRset_PTR:

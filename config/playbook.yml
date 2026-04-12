@@ -31,3 +31,8 @@
         # created a specific file (idempotency)
         #creates: /tmp/.ddns_update
 
+    - name: Deploy app configuration file
+      ansible.builtin.template:
+        src: config/app.yml
+        dest: "/usr/local/etc/app.yml"
+        mode: '0700'

@@ -85,7 +85,7 @@ def _fetch(url: str, headers: list, method: str, body: dict = {}):
 # [^30]: https://doc.powerdns.com/authoritative/http-api/index.html#enabling-the-api
 # [^40]: https://doc.powerdns.com/authoritative/http-api/zone.html#rrset
 # [^45]: https://doc.powerdns.com/authoritative/http-api/zone.html#creating-new-rrset
-def update_record(url: str, zone: str, api_key: str, json_data: str) -> int:
+def update_record(url: str, zone: str, api_key: str, json_data: str) -> FetchError:
     err = FetchError(-1, "HTTP/1.1 UNKNOWN")
     request_headers = {}
 
@@ -323,11 +323,14 @@ def update_record_new(url: str, zone: str, api_key: str, RRset: dict) -> int:
         res_message = "HTTP/1.1 422 UNPROCESSABLE ENTITY"
     else:
         res_status_code = -1
-        res_message = "HTTP/1.1 UNKNOWN" 
-    
+        res_message = "HTTP/1.1 UNKNOWN"
+
     response_detail = namedtuple('ResponseDetail', 'status_code, status_message')
     response_detail.status_code = res_status_code
-    response_detail.status_message = res_message    
+    response_detail.status_message = res_message
     return response_detail
 
+# /usr/lib/python3.14/unittest/utils.py:54
+def strclass(cls):
+    return "%s.%s" % (cls.__module__, cls.__qualname__)
 

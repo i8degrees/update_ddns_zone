@@ -31,6 +31,13 @@ PDNS_API_PORT: 8081
 # >> you may opt to set it here, instead.
 #PDNS_API_KEY:
 PDNS_API_TTL: 60
+global_config:
+  api_host: ns4.home:8081 # += "api/zone/..."
+  api_protocol: http # http|https|ws|wss
+  # none|pem|path
+  api_host_certificate: false
+  # whether or not to use DHCID tracking; see also RFC 4701
+  dhcid_rr: true
 forward-ddns:
   ddns-domains:
     - name: home.arpa
@@ -84,5 +91,4 @@ tsig-keys:
   - name: tsig-dummy-key
     algorithm: md5
     secret: xxx
-
 
