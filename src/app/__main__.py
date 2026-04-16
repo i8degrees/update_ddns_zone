@@ -105,8 +105,6 @@ PDNS_API_URL: Final[str] = config["PDNS_API_PROTO"] + "://" + \
     config["PDNS_API_HOST"] \
 + ":" + str(config["PDNS_API_PORT"])
 
-#print(app.lookup_forward("iot.ha.home.arpa"))
-
 DNSMASQ_LOG_DHCP = \
     get_env("DNSMASQ_LOG_DHCP", False)
 if DNSMASQ_LOG_DHCP and bool(DNSMASQ_LOG_DHCP) == True:
@@ -132,27 +130,23 @@ DNSMASQ_DATA_MISSING = \
     get_env("DNSMASQ_DATA_MISSING", False)
 if DNSMASQ_DATA_MISSING and bool(DNSMASQ_DATA_MISSING) == True:
     print("DNSMASQ_DATA_MISSING=1\nExiting...\n")
-    #sys.exit(0);
+    sys.exit(0);
+
+# !! IMPORTANT(JEFF): DNSMASQ_DOMAIN is a required environment variable of which is
+# only passed to this script when the end-user has dnsmasq configured with
+# an explicit domain. See the dnsmasq manual page regarding the `--domain`
+# parameter.
+DNSMASQ_DOMAIN = \
+  canonical_dns_name(get_env("DNSMASQ_DOMAIN", ""))
+
+# ?? Rename to DNSMASQ_DOMAIN_PTR
+# !! IMPORTANT(JEFF): This is required for the REST endpoint data input for PTR
+# !! zone updates
+DNSUPDATE_ZONE_PTR = \
+  canonical_dns_name(get_env("DNSUPDATE_ZONE_PTR", ""))
 
 def main() -> None:
   #args = sys.argv
-
-  # !! IMPORTANT(JEFF): DNSMASQ_DOMAIN is a required environment variable of which is
-  # only passed to this script when the end-user has dnsmasq configured with
-  # an explicit domain. See the dnsmasq manual page regarding the `--domain`
-  # parameter.
-  DNSMASQ_DOMAIN = \
-    canonical_dns_name(get_env("DNSMASQ_DOMAIN", ""))
-  
-  # ?? Rename to DNSMASQ_DOMAIN_PTR
-  DNSUPDATE_ZONE_PTR = \
-    canonical_dns_name(get_env("DNSUPDATE_ZONE_PTR", ""))
-
-  # >> NOTE(JEFF): This is for our convenience during development of this script.
-  #if not get_env("DNSMASQ_DOMAIN", "") and DEBUG == True:
-    #DNSMASQ_DOMAIN = canonical_dns_name("test.home.arpa")
-
-  # DNSUPDATE_ZONE_PTR: Final[str|None] = None
 
   # >> HACK(JEFF): This is a monkey patch for until we figure out a proper 
   # >> configuration format for this script that matches the domain with the
@@ -160,21 +154,16 @@ def main() -> None:
   # >> file is missing, we simply do not touch the reverse zone mappings 
   # >> whatsoever.
   if DNSMASQ_DOMAIN == canonical_dns_name("home.arpa"):
-    # !! IMPORTANT(JEFF): This is required for the REST endpoint data input for PTR
-    # !! zone updates
-    DNSUPDATE_ZONE_PTR = "12.168.192.in-addr.arpa."
-    #DNSUPDATE_ZONE_PTR = canonical_dns_name("12.168.192.in-addr.arpa")
+    DNSUPDATE_ZONE_PTR = canonical_dns_name("12.168.192.in-addr.arpa")
   elif DNSMASQ_DOMAIN == canonical_dns_name("ha.home.arpa"):
-    # !! IMPORTANT(JEFF): This is required for the REST endpoint data input for PTR
-    # !! zone updates
-    DNSUPDATE_ZONE_PTR = "11.168.192.in-addr.arpa."
-    #DNSUPDATE_ZONE_PTR = canonical_dns_name("11.168.192.in-addr.arpa")
+    DNSUPDATE_ZONE_PTR = canonical_dns_name("11.168.192.in-addr.arpa")
   elif DNSMASQ_DOMAIN == canonical_dns_name("iot.ha.home.arpa"):
-    # !! IMPORTANT(JEFF): This is required for the REST endpoint data input for PTR
-    # !! zone updates
-    DNSUPDATE_ZONE_PTR = "14.168.192.in-addr.arpa."
-    #DNSUPDATE_ZONE_PTR = canonical_dns_name("14.168.192.in-addr.arpa")
-  
+    DNSUPDATE_ZONE_PTR = canonical_dns_name("14.168.192.in-addr.arpa")
+  elif DNSMASQ_DOMAIN == canonical_dns_name("mgmt.home.arpa"):
+     DNSUPDATE_ZONE_PTR = canonical_dns_name("13.168.192.in-addr.arpa")
+  elif DNSMASQ_DOMAIN == canonical_dns_name("wifi.home.arpa"):
+     DNSUPDATE_ZONE_PTR = canonical_dns_name("16.168.192.in-addr.arpa")
+    
   log.debug(f'DNSMASQ_DOMAIN={DNSMASQ_DOMAIN}')
   log.debug(f'DNSUPDATE_ZONE_PTR={DNSUPDATE_ZONE_PTR}')
   
