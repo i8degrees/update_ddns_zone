@@ -159,6 +159,8 @@ def main() -> None:
     DNSUPDATE_ZONE_PTR = canonical_dns_name("11.168.192.in-addr.arpa")
   elif DNSMASQ_DOMAIN == canonical_dns_name("iot.ha.home.arpa"):
     DNSUPDATE_ZONE_PTR = canonical_dns_name("14.168.192.in-addr.arpa")
+  elif DNSMASQ_DOMAIN == canonical_dns_name("iot.home.arpa"):
+    DNSUPDATE_ZONE_PTR = canonical_dns_name("14.168.192.in-addr.arpa")
   elif DNSMASQ_DOMAIN == canonical_dns_name("mgmt.home.arpa"):
      DNSUPDATE_ZONE_PTR = canonical_dns_name("13.168.192.in-addr.arpa")
   elif DNSMASQ_DOMAIN == canonical_dns_name("wifi.home.arpa"):
