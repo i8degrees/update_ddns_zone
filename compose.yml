@@ -1,0 +1,36 @@
+---
+
+networks:
+  proxy:
+    external: true
+
+#volumes:
+  #certs:
+    #external: true
+
+services:
+  ddns_update:
+    command: [
+      "DNSMASQ_DOMAIN=wifi.home.arpa"
+      "ddns_update"
+      "-c/usr/local/etc/app.yml"
+      "-lDEBUG"
+      "old"
+      "xxx"
+      "127.0.0.1"
+      "test"
+    ]
+    build:
+      context: .
+      dockerfile: "Dockerfile"
+    container_name: ddns-update-1
+    restart: on-failure
+    tty: true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/ssl/certs:/etc/ssl/certs:ro
+      - ./config/app.yml:/usr/local/etc/app.yml:ro
+    environment:
+      - "TZ=America/Chicago"
+      - "LC_TIME=C.UTF-8"
+
