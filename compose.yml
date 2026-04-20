@@ -10,27 +10,23 @@ networks:
 
 services:
   ddns_update:
-    command: [
-      "DNSMASQ_DOMAIN=wifi.home.arpa"
-      "ddns_update"
-      "-c/usr/local/etc/app.yml"
-      "-lDEBUG"
-      "old"
-      "xxx"
-      "127.0.0.1"
-      "test"
-    ]
     build:
       context: .
       dockerfile: "Dockerfile"
+    command: ["ddns_update", "-c", "/app/config/app.yml", "-l", "DEBUG", "del", "ce:5e:bb:xx:xx", "127.0.0.1", "test"]
     container_name: ddns-update-1
     restart: on-failure
     tty: true
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/ssl/certs:/etc/ssl/certs:ro
-      - ./config/app.yml:/usr/local/etc/app.yml:ro
+      #- ./config/app.yml:/usr/local/etc/app.yml:ro
     environment:
       - "TZ=America/Chicago"
       - "LC_TIME=C.UTF-8"
-
+      - "DNSMASQ_DOMAIN=wifi.home.arpa"
+      - "DNSMASQ_LOG_DHCP=1"
+    # >> Feel free to store sensitive data, such as your API host passphrase,
+    # >> in a separate environment file.
+    env_file:
+      - ".env.compose"
