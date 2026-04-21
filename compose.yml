@@ -1,3 +1,8 @@
+# Docker compose project for testing ddns-update
+#
+#
+# SEE ALSO
+# 1. https://hub.docker.com/r/dockurr/dnsmasq
 ---
 
 networks:
