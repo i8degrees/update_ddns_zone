@@ -9,6 +9,25 @@ networks:
     #external: true
 
 services:
+  dnsmasq:
+    command: ["dnsmasq", "-C", "/app/templates/dnsmasq/dnsmasq.conf.dnsmasq_IOT"]
+    container_name: ddns-update-dnsmasq-1
+    image: dockurr/dnsmasq:2.92
+    restart: on-failure
+    tty: true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/ssl/certs:/etc/ssl/certs:ro
+      - ./templates/dnsmasq:/app/templates/dnsmasq:ro
+      - ./templates/openwrt/usr/lib/dnsmasq/dhcp-script.sh:/usr/lib/dnsmasq/dhcp-script.sh:ro
+      - ./templates/openwrt/usr/share/libubox/jshn.sh:/usr/share/libubox/jshn.sh:ro
+    environment:
+      - "TZ=America/Chicago"
+      - "LC_TIME=C.UTF-8"
+      - "DNSMASQ_LOG_DHCP=1"
+      #- "DNS1=1.0.0.1"
+      #- "DNS2=1.1.1.1"
+
   ddns_update:
     build:
       context: .
@@ -30,3 +49,4 @@ services:
     # >> in a separate environment file.
     env_file:
       - ".env.compose"
+
