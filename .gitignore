@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -211,4 +210,5 @@ __marimo__/
 
 .env.compose
 !.env.compose.dist
-
+#!openwrt/usr/lib/dnsmasq/
+#!templates/openwrt/usr/lib/dnsmasq/dhcp-script.sh
