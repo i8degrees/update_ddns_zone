@@ -55,7 +55,7 @@ scripts/build.sh
 
 #### deployment
 ```shell
-pipx install update_ddns_zone-1.0.0.tar.gz
+pipx install update_ddns_zone-1.1.0.tar.gz
 # second phase of deployment; upload to host for bootstrap
 scripts/deploy.sh
 ```
