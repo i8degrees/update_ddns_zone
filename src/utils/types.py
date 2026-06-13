@@ -1,7 +1,6 @@
 
 from enum import Enum
 from utils.parse_boolean import parse_boolean
-from utils.env import get_env
 from logging import *
 from utils.util import *
 

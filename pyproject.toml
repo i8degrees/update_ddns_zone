@@ -27,8 +27,6 @@ classifiers = [
 ]
 
 dependencies = [
-  "python-dotenv >= 1.2.1",
-  "python-dotenv[cli] >= 1.2.1",
   "urllib3 >= 2.6.3",
   # !! OpenWRT v24.10.4 requires this particular version
   "pyyaml == 6.0.1",

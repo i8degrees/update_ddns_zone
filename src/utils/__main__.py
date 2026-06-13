@@ -8,8 +8,6 @@ from utils.log_impl import *
 from .AppConfig import AppConfig
 from .FetchError import FetchError
 
-# ?? Attempt to relocate dotenv env object here?
-
 def main():
     # utils exports; I have no clue as to if this is the proper way of
     # doing this?
@@ -19,10 +17,6 @@ def main():
     return [
         # parse_boolean.py
         parse_boolean,
-        # env.py
-        get_env,
-        get_env_bool,
-        #set_env,
         # log_impl.py
         message,
         crit,

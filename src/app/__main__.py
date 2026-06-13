@@ -12,9 +12,18 @@ from utils import *
 import logging
 
 env = {
-  **os.environ,
+    **os.environ
 }
 
+# shell env applicable to this service app
+env.setdefault("PDNS_API_KEY", "")
+env.setdefault("PDNS_API_VERSION", "4.8.4")
+env.setdefault("DNSMASQ_DOMAIN", canonical_dns_name("localhost.test"))
+env.setdefault("DNSUPDATE_ZONE_PTR", canonical_dns_name("in-addr.arpa"))
+env.setdefault("DNSMASQ_LOG_DHCP", False)
+env.setdefault("DNSMASQ_TAGS", "")
+env.setdefault("DNSMASQ_INTERFACE", "")
+env.setdefault("DNSMASQ_DATA_MISSING", False)
 
 log = logging.getLogger('ddns_psupdate')
 
@@ -75,18 +84,18 @@ config = app.dump()
 
 # !! This is ultimately left up to the end-user to decide of which they wish
 # to do; this must be set in either case.
-PDNS_API_KEY: str = ""
+PDNS_API_KEY = env["PDNS_API_KEY"]
 if config.get("PDNS_API_KEY") != None:
   PDNS_API_KEY = config["PDNS_API_KEY"]
 else:
-  PDNS_API_KEY = get_env("PDNS_API_KEY", "")
+  PDNS_API_KEY = env["PDNS_API_KEY"]
 assert PDNS_API_KEY != "", "The PDNS_API_KEY (X-API-Key) must be initialized."
 
 PDNS_API_VERSION: str = ""
 if config.get("PDNS_API_VERSION") != None:
   PDNS_API_VERSION = config["PDNS_API_VERSION"]
 else:
-  PDNS_API_VERSION = get_env("PDNS_API_VERSION", "4.8.4")
+  PDNS_API_VERSION = env["PDNS_API_VERSION"]
 assert PDNS_API_VERSION != "", "PDNS_API_VERSION must be initialized"
 
 # !! Initial default
@@ -106,7 +115,7 @@ PDNS_API_URL: Final[str] = config["PDNS_API_PROTO"] + "://" + \
 + ":" + str(config["PDNS_API_PORT"])
 
 DNSMASQ_LOG_DHCP = \
-    get_env("DNSMASQ_LOG_DHCP", False)
+    env["DNSMASQ_LOG_DHCP"]
 if DNSMASQ_LOG_DHCP and bool(DNSMASQ_LOG_DHCP) == True:
     print("Verbose DHCP logging is enabled.")
     log.setLevel(9);
@@ -114,12 +123,12 @@ elif not (DNSMASQ_LOG_DHCP and DNSMASQ_LOG_DHCP == False):
     print("Verbose DHCP logging has not been requested.")
 
 DNSMASQ_TAGS = \
-    get_env("DNSMASQ_TAGS", "")
+    env["DNSMASQ_TAGS"]
 if DNSMASQ_TAGS and len(DNSMASQ_TAGS) > 0:
     print("DNSMASQ_TAGS=f{DNSMASQ_TAGS}")
 
 DNSMASQ_INTERFACE = \
-    get_env("DNSMASQ_INTERFACE", "")
+    env["DNSMASQ_INTERFACE"]
 if DNSMASQ_INTERFACE and len(DNSMASQ_INTERFACE) > 0:
     print("DNSMASQ_INTERFACE=f{DNSMASQ_INTERFACE}")
 
@@ -127,7 +136,7 @@ if DNSMASQ_INTERFACE and len(DNSMASQ_INTERFACE) > 0:
 # >> us -- at the very minimum -- that we do not need to iterate through
 # >> the main loop as there is nothing to be done.
 DNSMASQ_DATA_MISSING = \
-    get_env("DNSMASQ_DATA_MISSING", False)
+    env["DNSMASQ_DATA_MISSING"]
 if DNSMASQ_DATA_MISSING and bool(DNSMASQ_DATA_MISSING) == True:
     print("DNSMASQ_DATA_MISSING=1\nExiting...\n")
     sys.exit(0);
@@ -137,13 +146,13 @@ if DNSMASQ_DATA_MISSING and bool(DNSMASQ_DATA_MISSING) == True:
 # an explicit domain. See the dnsmasq manual page regarding the `--domain`
 # parameter.
 DNSMASQ_DOMAIN = \
-  canonical_dns_name(get_env("DNSMASQ_DOMAIN", ""))
+  canonical_dns_name(env["DNSMASQ_DOMAIN"])
 
 # ?? Rename to DNSMASQ_DOMAIN_PTR
 # !! IMPORTANT(JEFF): This is required for the REST endpoint data input for PTR
 # !! zone updates
 DNSUPDATE_ZONE_PTR = \
-  canonical_dns_name(get_env("DNSUPDATE_ZONE_PTR", ""))
+  canonical_dns_name(env["DNSUPDATE_ZONE_PTR"])
 
 def main() -> None:
   #args = sys.argv
@@ -166,8 +175,8 @@ def main() -> None:
   elif DNSMASQ_DOMAIN == canonical_dns_name("wifi.home.arpa"):
      DNSUPDATE_ZONE_PTR = canonical_dns_name("16.168.192.in-addr.arpa")
     
-  log.debug(f'DNSMASQ_DOMAIN={DNSMASQ_DOMAIN}')
-  log.debug(f'DNSUPDATE_ZONE_PTR={DNSUPDATE_ZONE_PTR}')
+  log.debug(f'DNSMASQ_DOMAIN={env["DNSMASQ_DOMAIN"]}')
+  log.debug(f'DNSUPDATE_ZONE_PTR={env["DNSUPDATE_ZONE_PTR"]}')
   
   # !! FIXME
   assert DNSMASQ_DOMAIN != "None." and DNSMASQ_DOMAIN != "", "DNSMASQ_DOMAIN must be set"
@@ -202,7 +211,7 @@ def main() -> None:
       "type": "A",
       "ttl": f'{config["PDNS_API_TTL"]}',
       # ?? TODO(JEFF): Use EXTEND API when PDNS_API_VERSION >= 4.9.12
-      "changetype": "REPLACE", # DELETE
+      "changetype": PDNS_CHANGE_TYPE,
       "records": [{
         "content": IP_ADDR,
         "disabled": False
@@ -217,7 +226,7 @@ def main() -> None:
       "type": "TXT",
       "ttl": f'{config["PDNS_API_TTL"]}',
       # ?? TODO(JEFF): Use EXTEND API when PDNS_API_VERSION >= 4.9.12
-      "changetype": "REPLACE", # DELETE
+      "changetype": PDNS_CHANGE_TYPE,
       "records": [{
         # ?? TODO(JEFF): Lookup function for escaping this input; the REST endpoint
         # ?? requires this particular RR type to always have quotes surrounding it.
@@ -234,7 +243,7 @@ def main() -> None:
       "type": "PTR",
       "ttl": f'{config["PDNS_API_TTL"]}',
       # ?? TODO(JEFF): Use EXTEND API when PDNS_API_VERSION >= 4.9.12
-      "changetype": "REPLACE", # DELETE
+      "changetype": PDNS_CHANGE_TYPE,
       "records": [{
         "content": f'{FQDN}',
         "disabled": False
