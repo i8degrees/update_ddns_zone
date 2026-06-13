@@ -1,18 +1,27 @@
 #!/bin/sh
 
-#DHCP_DEBUG=1
+[ -n "$DNSMASQ_LOG_DHCP" ] && echo "DNSMASQ_LOG_DHCP=$DNSMASQ_LOG_DHCP"; echo
+[ -n "$DNSMASQ_LOG_DHCP" ] && echo "USER_DHCPSCRIPT=$USER_DHCPSCRIPT"; echo
 
 load_dhcpscript() {
   CMD="$1"
-  echo "$0 - $CMD event"
-  echo "$0 - MACADDR=$2"
-  echo "$0 - IPADDR=$3"
-  echo "$0 - HOSTNAME=$4"
+  if [ -n "$DNSMASQ_LOG_DHCP" ]; then
+    echo "$0 - $CMD event"
+    echo "$0 - MACADDR=$2"
+    echo "$0 - IPADDR=$3"
+    echo "$0 - HOSTNAME=$4"
+  fi
 
-  [ -f "$USER_DHCPSCRIPT" ] && . "$USER_DHCPSCRIPT" "$@"
+  if [ "$CMD" = "add" ]; then
+    echo "DEBUG: (all arguments): " "$@"
+    [ -f "$USER_DHCPSCRIPT" ] && . "$USER_DHCPSCRIPT" "$1" "$2" "$3" "$4"
+  elif [ "$CMD" = "del" ]; then
+    echo "DEBUG: (all arguments): " "$@"
+    [ -f "$USER_DHCPSCRIPT" ] && . "$USER_DHCPSCRIPT" "$1" "$2" "$3" "$4"
+  fi
 }
 
-#load_dhcpscript "$@"
+load_dhcpscript "$@"
 
 . /usr/share/libubox/jshn.sh
 
@@ -37,24 +46,16 @@ case "$1" in
 		json_add_string "" "ACTION=add"
 		json_add_string "" "HOSTNAME=$4"
 		hotplugobj="dhcp"
-    load_dhcpscript "$@" # IP alloc
 	;;
 	del)
 		json_add_string "" "ACTION=remove"
 		json_add_string "" "HOSTNAME=$4"
 		hotplugobj="dhcp"
-    load_dhcpscript "$@" # IP de-alloc
 	;;
 	old)
 		json_add_string "" "ACTION=update"
 		json_add_string "" "HOSTNAME=$4"
 		hotplugobj="dhcp"
-    if [ -n "$DHCP_DEBUG" ]; then
-      echo "$0 - UPDATE event (DO NOTHING)"
-      echo "$0 - MACADDR=$2"
-      echo "$0 - IPADDR=$3"
-      echo "$0 - HOSTNAME=$4"
-	  fi
   ;;
 	arp-add)
 		json_add_string "" "ACTION=add"
