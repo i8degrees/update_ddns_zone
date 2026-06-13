@@ -7,7 +7,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+ "/s
 
 from utils.util import canonical_dns_name, short_hostname
 from utils.parse_boolean import *
-from utils.env import get_env_bool
 from utils.log_impl import *
 
 def canonical_name(ip_addr: str|list, omit_final_dot:bool = False) -> str:

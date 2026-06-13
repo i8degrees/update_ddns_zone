@@ -15,19 +15,19 @@ import sys
 # !! import logging
 from typing import Final # type: ignore
 
-# !! Phase the use of dotenv in here out; this means improving our impl for the 
-# !! PDNS_API_VERSION environment variable.
-from dotenv import dotenv_values
-
 from .parse_boolean import *
-from .env import * # env.py
 import logging
 from .FetchError import FetchError
 
 env = {
-    **os.environ,
-    **dotenv_values(".env"),
+    **os.environ
 }
+
+env.setdefault("DEBUG", "")
+env.setdefault("DEBUG_TRACE", "")
+env.setdefault("VERBOSE", "")
+env.setdefault("SYSLOG", "")
+env.setdefault("PDNS_API_VERSION", "4.8.4")
 
 EXIT_SUCCESS = int(0)
 EXIT_PARAMS: int = errno.EINVAL
@@ -293,7 +293,7 @@ def update_record_new(url: str, zone: str, api_key: str, RRset: dict) -> int:
     # ?? than 4.8.4; I am limited to v4.8.4 API until I upgrade the auth server on my end.
     # >> SEE ALSO
     # >> 1. https://doc.powerdns.com/authoritative/http-api/zone.html#adding-a-single-record-to-a-rrset
-    if env["PDNS_API_VERSION"] >= "4.9.12":
+    if env["PDNS_API_VERSION"] and env["PDNS_API_VERSION"] >= "4.9.12":
         PDNS_CHANGE_TYPE = "EXTEND"
 
     res = _fetch(api_url, request_headers, "PATCH", request_data)

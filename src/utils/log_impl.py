@@ -9,15 +9,13 @@ import os
 from typing import Final # type: ignore
 
 from .parse_boolean import *
-from dotenv import dotenv_values
 #from env import * # env.py
 
 # !! TODO
 #from logging import basicConfig
 
 config = {
-    **os.environ,
-    **dotenv_values(".env"),
+    **os.environ
 }
 
 config.setdefault("DEBUG", "")

@@ -1,7 +1,6 @@
 from .parse_boolean import parse_boolean
 #from .util import update_record, delete_record,
 from .util import *
-from .env import *
 from .log_impl import *
 from .AppConfig import AppConfig
 from .FetchError import FetchError
@@ -22,8 +21,6 @@ __all__ = [
   'run_cmd',
   'short_hostname',
   'canonical_dns_name',
-  'get_env',
-  'get_env_bool',
   'message',
   'crit',
   'error',
