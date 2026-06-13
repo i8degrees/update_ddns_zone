@@ -30,7 +30,7 @@ log = logging.getLogger('ddns_psupdate')
 app = None
 
 PROG_NAME = 'ddns_psupdate'
-PROG_VERSION = '%(prog)s ' + __version__
+PROG_VERSION = '%(prog)s ' + 'v' + __version__ + ' at git SHA ' + __gitversion__
 DESCRIPTION = 'Update DNS upon DHCP lease'
 DEFAULT_CONFIG_FILE_PATH = "config/app.yml"
 DEFAULT_LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]

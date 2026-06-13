@@ -2,6 +2,10 @@
 
 import subprocess
 
+def project_version() -> str:
+    """Returns the official version string as per what is stated in the pyproject.toml"""
+    return "1.0.0"
+
 def git_revision_hash() -> str:
     """Returns the full git revision hash of the current directory."""
     try:
@@ -20,8 +24,9 @@ def git_revision_short_hash() -> str:
         return commit_hash_short
     except subprocess.CalledProcessError:
         return "Unknown"
-    
-__version__ = git_revision_short_hash()
+
+__gitversion__ = git_revision_short_hash()
+__version__ = project_version()
 
 if __name__ == "__main__":
     pass
