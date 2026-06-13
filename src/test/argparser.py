@@ -1,12 +1,12 @@
 #!.venv/bin/python
 import os
 import argparse
-from utils import __version__
+from utils import __version__, __gitversion__
 
 PROG_NAME = 'ddns_psupdate'
 PROG_VERSION = '%(prog)s 1.0.0'
 # ?? import utils for __version__ def
-PROG_VERSION = '%(prog)s ' + __version__
+PROG_VERSION = '%(prog)s ' + 'v' + __version__ + ' at git SHA ' + __gitversion__
 DESCRIPTION = 'Update DNS upon DHCP lease'
 DEFAULT_LOG_LEVELS = ["DEBUG", "NOTICE", "INFO", "WARNING", "CRITICAL", "ERROR"]
 DEFAULT_CONFIG_FILE_PATH = "config/app.yml"

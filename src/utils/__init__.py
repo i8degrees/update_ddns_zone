@@ -4,7 +4,7 @@ from .util import *
 from .log_impl import *
 from .AppConfig import AppConfig
 from .FetchError import FetchError
-from .version import __version__ #git_revision_short_hash, git_revision_hash
+from .version import __version__, __gitversion__
 from .types import RRType, FQDN, IPHost, RR_A, RR_TXT, RR_PTR, RRset
 
 import logging
@@ -32,6 +32,7 @@ __all__ = [
   'AppConfig',
   'FetchError',
   '__version__',
+  '__gitversion__',
   #'strclass',
   'RRType',
   'FQDN',
