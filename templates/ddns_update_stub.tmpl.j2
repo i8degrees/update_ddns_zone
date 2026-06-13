@@ -31,7 +31,9 @@ DDNS_UPDATE_CONFIG={{ ddns_update_config }}; export DDNS_UPDATE_CONFIG
 PDNS_API_KEY={{ pdns_api_key }}; export PDNS_API_KEY
 
 /root/.local/share/pipx/venvs/{{ project_name }}/bin/{{ script_exe }} \
-  $1 $2 $3 $4
+  --config "${DDNS_UPDATE_CONFIG}" \
+"$1" "$2" "$3" "$4"
 
 unset DDNS_UPDATE_CONFIG
 unset PDNS_API_KEY
+
