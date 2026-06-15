@@ -5,7 +5,7 @@ from utils.util import canonical_dns_name
 
 def _load_yaml(path: str = '') -> None:
     result: dict = {}
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='utf-8') as file:
         result = yaml.safe_load(file)
     return result
 
