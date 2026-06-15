@@ -39,8 +39,10 @@ if ! $DEPLOY_CMD -O "${DEPLOY_PACKAGE_PATH}" ${SSH_HOST_STR}:${DEPLOY_PACKAGE_DE
   exit 1
 fi
 
-DEPLOY_CONFIG="config/app.yml" # local path
-DEPLOY_CONFIG_DEST="/usr/local/etc/app.yml" # remote path
+#DEPLOY_CONFIG="config/app.yml" # local path
+#DEPLOY_CONFIG_DEST="/usr/local/etc/app.yml" # remote path
+DEPLOY_CONFIG="config/app.json" # local path
+DEPLOY_CONFIG_DEST="/usr/local/etc/app.json" # remote path
 
 # 1b. Copy configuration file
 # >> Do not fear if this fails -- we may have the file locked with chattr +i

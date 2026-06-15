@@ -1,28 +1,61 @@
 
-import yaml # pyyaml
+from pathlib import Path
+
+try:
+    import yaml # pyyaml (external module)
+    has_yaml_module=1
+except:
+    has_yaml_module=0
+
+import json # builtin module
 import logging
 from utils.util import canonical_dns_name
 
-def _load_yaml(path: str = '') -> None:
+# TODO(JEFF): Add try catch that explicitly tries to handle
+# FileNotFoundError and JSONDecodeError (with details of why
+# the JSON document was invalid). Additionally, UnicodeDecodeError.
+def _load_json(path: str = '') -> dict:
     result: dict = {}
     with open(path, 'r', encoding='utf-8') as file:
-        result = yaml.safe_load(file)
-    return result
+        result = json.load(file)
+        return result
+
+def _load_yaml(path: str = '') -> dict:
+    result: dict = {}
+    try:
+        with open(path, 'r', encoding='utf-8') as file:
+            result = yaml.safe_load(file)
+            return result
+    except UnicodeDecodeError:
+        print(f"Failed to decode UTF-8 file at {f}.")
+    except FileNotFoundError:
+        print(f"YAML file at {f} not found.")
 
 """ AppConfig """
 class AppConfig:
 
     def __init__(self, path: str = '') -> None:
         self._version: int = 0
-        self._path = path
-        self.app = _load_yaml(path)
-        
+        self._path = Path(path)
+        if has_yaml_module == 1:
+            if self._path.suffix == '.yml' or self._path.suffix == '.yaml':
+                self.app = _load_yaml(self._path)
+                self._fmt = 'yaml'
+        elif has_yaml_module == 0:
+            self.app = None
+            self._fmt = ""
+        if self._path.suffix == '.json':
+            self.app = _load_json(self._path)
+            self._fmt = 'json'
         if self.app and self.app["version"]:
             #self._version: int = self.app["version"]
             self.set_version(self.app["version"])
         assert self._version != 0, \
             "self._version should never == 0 without _load_yaml throwing exception!"
-        
+
+    def fmt(self) -> str:
+        """Return the language used to parse the configuration file"""
+        return self._fmt; # (yaml|json|"")
     def path(self) -> str:
         return self._path
 
