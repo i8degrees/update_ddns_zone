@@ -51,9 +51,62 @@ pip install -e ddns_update[dev]
 pip install -e .
 # build dist packages and upload to host for dev deployment
 scripts/build.sh
+# This will only be available when you install the `[dev]` package. This module
+allows us to validate our pyproject.toml.
+.venv/bin/pyproject-build
 ```
 
-#### deployment
+### release
+
+1. validate project iles
+2. release git branch
+3. version bump
+4. commit
+
+**NOTE**: This subsection is intended to describe the minimum requirements
+necessary for making a release.
+
+#### validate project files
+
+To prepare a release, first we must ensure that our pyproject file is
+validated. Assuming you have already created a virtual environment for this
+project, we can validate our `pyproject.toml` file with this:
+
+```shell
+.venv/bin/pyproject-build
+```
+
+Once this process returns no error messages, we can prepare our git repository
+for a release (next step).
+
+#### release git branch
+
+```shell
+git checkout -B release/x.x.x
+```
+
+#### version bump
+
+There are two files in which we must increase the version number by:
+
+```shell
+pyproject.toml
+src/utils/version.py
+```
+
+#### commit
+
+```shell
+git stage pyproject.toml src/utils/version.py
+git commit -m"Release vX.X.X"
+git tag vX.X.X
+```
+
+**NOTE**: The git commit message should include a changelog of what has
+changed in the release, especially anything that breaks existing use.
+
+### deployment
+
 ```shell
 pipx install update_ddns_zone-1.1.0.tar.gz
 # second phase of deployment; upload to host for bootstrap
