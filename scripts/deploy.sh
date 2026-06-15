@@ -8,8 +8,22 @@
   #"config/app.yml"
   #"dist/update_ddns_zone-1.0.0.tar.gz"
 #)
-DEPLOY_PACKAGE_PATH="dist/${DEPLOY_PACKAGE_FILENAME}" # local path
-DEPLOY_PACKAGE_FILENAME=update_ddns_zone-1.0.0.tar.gz # package filename
+
+# package
+#DEPLOY_PACKAGE_VERSION=1.1.0
+DEPLOY_PACKAGE_VERSION="$(cat pyproject.toml | tomlq .project.version)"
+# package filename
+DEPLOY_PACKAGE_FILENAME=$1
+if [ -z "$DEPLOY_PACKAGE_FILENAME" ]; then
+  echo "CRIT: not a valid file path..."
+  echo
+  exit 1
+fi
+
+#DEPLOY_PACKAGE_FILENAME=update_ddns_zone-${DEPLOY_PACKAGE_VERSION}.tar.gz 
+DEPLOY_PACKAGE_PATH="${DEPLOY_PACKAGE_FILENAME}" # local path
+
+# deploy host
 DEPLOY_USER=root # remote user
 DEPLOY_HOST=sw2-gw.lan # remote host
 SSH_HOST_STR="${DEPLOY_USER}@${DEPLOY_HOST}"
