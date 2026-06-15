@@ -10,20 +10,25 @@ name = "update_ddns_zone"
 version = "1.1.0"
 description = "DDNS DHCP update integration with DNSMASQ"
 readme = { file = "README.md", content-type="text/markdown" }
-license = { file = "LICENSE.md" }
+license = "BSD-3-Clause"
+license-files = ["LICENSE.md"]
 authors = [{ name = "Jeffrey Carpenter", email = "1329364+i8degrees@users.noreply.github.com" }]
 maintainers = [{ name = "Jeffrey Carpenter", email = "1329364+i8degrees@users.noreply.github.com" }]
 keywords = [ "ddns", "dhcp", "dnsmasq", "powerdns", "pdns" ]
 classifiers = [
     "Development Status :: 3 - Alpha",
+#"Development Status :: 4 - Beta",
+#"Development Status :: 5 - Production/Stable",
     "Environment :: Console",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: System Administrators",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3",
     # !! OpenWRT v24.10.4 requires this particular version
     "Programming Language :: Python :: 3.11",
     "Topic :: Utilities",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: System :: Networking :: Monitoring",
+    "Topic :: System :: Networking",
 ]
 
 dependencies = [
