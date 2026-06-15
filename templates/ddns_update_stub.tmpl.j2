@@ -8,6 +8,7 @@
 # SEE ALSO
 # 1. man 8 dnsmasq
 # 2. https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
+# 3. /usr/lib/dnsmasq/dhcp-script.sh on OpenWRT (dnsmasq-full)
 #
 
 # process control for app; these used to be pulled from dotenv
@@ -16,14 +17,6 @@ DEBUG_TRACE={{ debug_trace }}
 VERBOSE={{ verbose }}
 SYSLOG={{ syslog }}
 
-# required app arguments; these are given to us from OpenWRT at
-# /usr/lib/dnsmasq/dhcp-script.sh - this script has minimal modifications
-# made to it.
-CMD=$1
-MAC=$2
-IPADDR=$3
-HOSTNAME=$4
-
 # DDNS Update configuration file
 DDNS_UPDATE_CONFIG={{ ddns_update_config }}; export DDNS_UPDATE_CONFIG
 
@@ -31,8 +24,7 @@ DDNS_UPDATE_CONFIG={{ ddns_update_config }}; export DDNS_UPDATE_CONFIG
 PDNS_API_KEY={{ pdns_api_key }}; export PDNS_API_KEY
 
 /root/.local/share/pipx/venvs/{{ project_name }}/bin/{{ script_exe }} \
-  --config "${DDNS_UPDATE_CONFIG}" \
-"$1" "$2" "$3" "$4"
+  --config "${DDNS_UPDATE_CONFIG}" "$@"
 
 unset DDNS_UPDATE_CONFIG
 unset PDNS_API_KEY
