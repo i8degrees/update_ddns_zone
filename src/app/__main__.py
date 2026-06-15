@@ -125,14 +125,14 @@ elif not (DNSMASQ_LOG_DHCP and DNSMASQ_LOG_DHCP == False):
 DNSMASQ_TAGS = \
     env["DNSMASQ_TAGS"]
 if DNSMASQ_TAGS and len(DNSMASQ_TAGS) > 0:
-    print("DNSMASQ_TAGS=f{DNSMASQ_TAGS}")
+    print(f'DNSMASQ_TAGS={DNSMASQ_TAGS}')
 
 DNSMASQ_INTERFACE = \
     env["DNSMASQ_INTERFACE"]
 if DNSMASQ_INTERFACE and len(DNSMASQ_INTERFACE) > 0:
-    print("DNSMASQ_INTERFACE=f{DNSMASQ_INTERFACE}")
+    print(f'DNSMASQ_INTERFACE={DNSMASQ_INTERFACE}')
 
-# >> This env is set to "1" (True) during "old" events and signifies to 
+# >> This env is set to "1" (True) during "old" events and signifies to
 # >> us -- at the very minimum -- that we do not need to iterate through
 # >> the main loop as there is nothing to be done.
 DNSMASQ_DATA_MISSING = \
@@ -272,7 +272,7 @@ def main() -> None:
     #RRset request(RRType.A_RECORD, name=FQDN, content=IP_ADDR)
     #request.json()
     if bool(DNSMASQ_LOG_DHCP) == True:
-        print(f'{LOG_STR} RR_TYPE_A_REQUEST:{json.dumps(RR_TYPE_A_REQUEST).encode('utf-8')}')
+        print(f'{LOG_STR} RR_TYPE_A_REQUEST:{json.dumps(RR_TYPE_A_REQUEST).encode("utf-8")}')
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST)
     if bool(DNSMASQ_LOG_DHCP) == True:
         print(res.message())
@@ -282,7 +282,7 @@ def main() -> None:
     #RRset request(RRType.TXT_RECORD, name=FQDN, content=MAC_ADDR)
     #request.json()
     if bool(DNSMASQ_LOG_DHCP) == True:
-        print(f'{LOG_STR} RR_TYPE_TXT_REQUEST:{json.dumps(RR_TYPE_TXT_REQUEST).encode('utf-8')}')
+        print(f'{LOG_STR} RR_TYPE_TXT_REQUEST:{json.dumps(RR_TYPE_TXT_REQUEST).encode("utf-8")}')
 
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST)
     if bool(DNSMASQ_LOG_DHCP) == True:
@@ -294,7 +294,7 @@ def main() -> None:
         #RRset request(RRType.PTR_RECORD, name=RIP, content=FQDN)
         #request.json()
         if bool(DNSMASQ_LOG_DHCP) == True:
-            print(f'{LOG_STR} RR_TYPE_PTR_REQUEST:{json.dumps(RR_TYPE_PTR_REQUEST).encode('utf-8')}')
+            print(f'{LOG_STR} RR_TYPE_PTR_REQUEST:{json.dumps(RR_TYPE_PTR_REQUEST).encode("utf-8")}')
         res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST)
         if bool(DNSMASQ_LOG_DHCP) == True:
             print(res.message())
@@ -310,7 +310,7 @@ def main() -> None:
     RR_TYPE_A_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
     RR_TYPE_A_REQUEST_DEL["rrsets"][0]["ttl"] = None
     if bool(DNSMASQ_LOG_DHCP) == True:
-        print(f'{LOG_STR} RR_TYPE_A_REQUEST_DEL:{json.dumps(RR_TYPE_A_REQUEST_DEL).encode('utf-8')}')
+        print(f'{LOG_STR} RR_TYPE_A_REQUEST_DEL:{json.dumps(RR_TYPE_A_REQUEST_DEL).encode("utf-8")}')
     
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST_DEL)
     if bool(DNSMASQ_LOG_DHCP) == True:
@@ -322,7 +322,7 @@ def main() -> None:
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["ttl"] = None
     if bool(DNSMASQ_LOG_DHCP) == True:
-        print(f'{LOG_STR} RR_TYPE_TXT_REQUEST_DEL:{json.dumps(RR_TYPE_TXT_REQUEST_DEL).encode('utf-8')}')
+        print(f'{LOG_STR} RR_TYPE_TXT_REQUEST_DEL:{json.dumps(RR_TYPE_TXT_REQUEST_DEL).encode("utf-8")}')
 
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST_DEL)
     if bool(DNSMASQ_LOG_DHCP) == True:
@@ -335,7 +335,7 @@ def main() -> None:
       RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
       RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["ttl"] = None
       if bool(DNSMASQ_LOG_DHCP) == True:
-        print(f'{LOG_STR} RR_TYPE_PTR_REQUEST_DEL:{json.dumps(RR_TYPE_PTR_REQUEST_DEL).encode('utf-8')}')
+        print(f'{LOG_STR} RR_TYPE_PTR_REQUEST_DEL:{json.dumps(RR_TYPE_PTR_REQUEST_DEL).encode("utf-8")}')
 
       res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST_DEL)
       if bool(DNSMASQ_LOG_DHCP) == True:
