@@ -89,7 +89,7 @@ def update_record(url: str, zone: str, api_key: str, json_data: str) -> FetchErr
     err = FetchError(-1, "HTTP/1.1 UNKNOWN")
     request_headers = {}
 
-    request_headers.setdefault("Content-Type", "application/json")
+    request_headers.setdefault("Content-Type", "application/json; charset=utf-8")
     request_headers.setdefault("X-API-Key", "")
 
     if api_key and len(api_key) > 0:
@@ -125,7 +125,7 @@ def update_record(url: str, zone: str, api_key: str, json_data: str) -> FetchErr
     # !! TODO(JEFF): We must construct the JSON input inside this function, instead
     # !! of in the main executable as we have been doing.
     # ?? TODO(JEFF): Validate JSON input
-    request_data = json.dumps(json_data)
+    request_data = json.dumps(json_data).encode('utf-8')
 
     res = _fetch(url=api_url, headers=request_headers, method="PATCH", body=request_data)
 
@@ -158,7 +158,7 @@ def delete_record(url, zone_str, api_key, data):
     err = FetchError(-1, "HTTP/1.1 UNKNOWN")
     request_headers = {}
 
-    request_headers.setdefault("Content-Type", "application/json")
+    request_headers.setdefault("Content-Type", "application/json; charset=utf-8")
     request_headers.setdefault("X-API-Key", "")
 
     if api_key and len(api_key) > 0:
@@ -195,7 +195,7 @@ def delete_record(url, zone_str, api_key, data):
     # !! TODO(JEFF): We must construct the JSON input inside this function, instead
     # !! of in the main executable as we have been doing.
     # ?? TODO(JEFF): Validate JSON input
-    request_data = json.dumps(data)
+    request_data = json.dumps(data).encode('utf-8')
     #request_data["rrsets"][0]["changetype"] = "DELETE"
 
     res = _fetch(api_url, request_headers, request_data, "DELETE")
@@ -257,7 +257,7 @@ def canonical_dns_name(hostname: str, omit_final_dot:bool = False) -> str:
 #RRset = dict({ fqdn: "", rr_type = "", ttl = 60, record = "" })
 def update_record_new(url: str, zone: str, api_key: str, RRset: dict) -> int:
     request_headers = {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json; charset=utf-8",
         "X-API-Key": api_key,
     }
 
