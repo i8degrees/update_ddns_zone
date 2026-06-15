@@ -6,6 +6,7 @@
 FROM python:3.14-slim-trixie
 LABEL maintainer="Jeffrey Carpenter <1329364+i8degrees@users.noreply.github.com>"
 
+ARG VERSION=1.1.1
 #USER root
 #WORKDIR /
 #apk add --no-cache
@@ -27,6 +28,12 @@ COPY templates/ /app/templates
 #USER app
 WORKDIR /app
 
+# expose inside container
+ENV \
+  PYTHONUTF8=1 \
+  LC_ALL=C.UTF-8 \
+  VERSION=${VERSION}
+
 # NOTE(JEFF): Any conveniences we wish to have within the container's shell
 # should be handled here if we wish for it to be permanent.
 #COPY --chmod=+x --chown=root:root \
@@ -36,7 +43,11 @@ WORKDIR /app
 RUN python3 -m pip install build # install build module
 RUN python3 -m build # produce dist image
 RUN python3 -m venv /app/.venv
-RUN python3 -m pip install /app/dist/update_ddns_zone-1.0.0-py3-none-any.whl
+RUN python3 -m pip install /app/dist/update_ddns_zone-${VERSION}-py3-none-any.whl
+#RUN \
+#chmod +x /app/scripts/docker/usage_tests.sh \
+#&& /app/scripts/docker/usage_tests.sh
+
 #python3 -m pip install --no-index --find-links=dist/ update_ddns_zone
 
 #ENV PYTHONPATH=/app:${PYTHONPATH}

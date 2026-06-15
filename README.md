@@ -56,6 +56,21 @@ allows us to validate our pyproject.toml.
 .venv/bin/pyproject-build
 ```
 
+#### Docker
+
+From the root of the project's git tree:
+
+```shell
+make
+docker run --rm -it i8degrees/ddns_update:dev /app/scripts/docker/usage_tests.sh
+```
+
+This builds a Docker image from the `Dockerfile` at the project root and then
+executes several basic usage tests.
+
+**NOTE(JEFF)**: The majority of the usage tests are expected to fail with
+non-zero exit codes. This is subject to change in the future.
+
 ### release
 
 1. validate project iles
