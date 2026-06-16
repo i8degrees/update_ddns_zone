@@ -48,7 +48,8 @@ python3 -m venv .venv
 .venv/bin/python3 -m build
 pip install -r requirements.txt
 pip install -e ddns_update[dev]
-pip install -e .
+pip install -e . # production package
+pip install -e ".[dev]" # development tools
 # build dist packages and upload to host for dev deployment
 scripts/build.sh
 # This will only be available when you install the `[dev]` package. This module
@@ -58,10 +59,18 @@ allows us to validate our pyproject.toml.
 
 #### Docker
 
+**NOTE**: Unless you are modifying the provided `Dockerfile`, there is no need
+to build an image locally as you can use the pre-built one available at the
+Docker registry shown below.
+
 From the root of the project's git tree:
 
 ```shell
 make
+docker run --rm -it i8degrees/ddns_update:dev ddns_update --help
+```
+
+```shell
 docker run --rm -it i8degrees/ddns_update:dev /app/scripts/docker/usage_tests.sh
 ```
 
