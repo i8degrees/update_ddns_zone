@@ -274,9 +274,11 @@ def main() -> None:
     #request.json()
     if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_A_REQUEST:{json.dumps(RR_TYPE_A_REQUEST).encode("utf-8")}')
+    else:
+        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
+        print(f'{LOG_STR} Updating A record XXX')
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST)
-    if bool(DNSMASQ_LOG_DHCP) == True:
-        print(res.message())
+    print(res.message())
     if res.status_code() != 204:
         exit(res.status_code())
 
@@ -284,21 +286,25 @@ def main() -> None:
     #request.json()
     if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_TXT_REQUEST:{json.dumps(RR_TYPE_TXT_REQUEST).encode("utf-8")}')
+    else:
+        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
+        print(f'{LOG_STR} Updating TXT record ...')
 
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST)
-    if bool(DNSMASQ_LOG_DHCP) == True:
-        print(res.message())
+    print(res.message())
     if res.status_code() != 204:
         exit(res.status_code())
-    
+
     if DNSUPDATE_ZONE_PTR != None:
         #RRset request(RRType.PTR_RECORD, name=RIP, content=FQDN)
         #request.json()
         if bool(DNSMASQ_LOG_DHCP) == True:
             print(f'{LOG_STR} RR_TYPE_PTR_REQUEST:{json.dumps(RR_TYPE_PTR_REQUEST).encode("utf-8")}')
+        else:
+            # TODO(JEFF): Improve logging with details (FQDN, IP etc)
+            print(f'{LOG_STR} Updating PTR record XXX')
         res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST)
-        if bool(DNSMASQ_LOG_DHCP) == True:
-            print(res.message())
+        print(res.message())
         if res.status_code() != 204:
             exit(res.status_code())
 
@@ -312,10 +318,12 @@ def main() -> None:
     RR_TYPE_A_REQUEST_DEL["rrsets"][0]["ttl"] = None
     if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_A_REQUEST_DEL:{json.dumps(RR_TYPE_A_REQUEST_DEL).encode("utf-8")}')
+    else:
+        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
+        print(f'{LOG_STR} Removing A record XXX')
     
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST_DEL)
-    if bool(DNSMASQ_LOG_DHCP) == True:
-        print(res.status_message())
+    print(res.status_message())
     if res.status_code() != 204:
       exit(res.status_code())
 
@@ -324,23 +332,27 @@ def main() -> None:
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["ttl"] = None
     if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_TXT_REQUEST_DEL:{json.dumps(RR_TYPE_TXT_REQUEST_DEL).encode("utf-8")}')
+    else:
+        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
+        print(f'{LOG_STR} Removing TXT record XXX')
 
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST_DEL)
-    if bool(DNSMASQ_LOG_DHCP) == True:
-        print(res.status_message())
+    print(res.status_message())
     if res.status_code() != 204:
       exit(res.status_code())
-    
+
     if DNSUPDATE_ZONE_PTR != None:
       RR_TYPE_PTR_REQUEST_DEL = RR_TYPE_PTR_REQUEST
       RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
       RR_TYPE_PTR_REQUEST_DEL["rrsets"][0]["ttl"] = None
       if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_PTR_REQUEST_DEL:{json.dumps(RR_TYPE_PTR_REQUEST_DEL).encode("utf-8")}')
+      else:
+        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
+        print(f'{LOG_STR} Removing PTR record XXX')
 
       res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST_DEL)
-      if bool(DNSMASQ_LOG_DHCP) == True:
-          print(res.status_message())
+      print(res.status_message())
       if res.status_code() != 204:
         exit(res.status_code())
 
