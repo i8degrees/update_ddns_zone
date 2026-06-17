@@ -11,7 +11,7 @@ class Error:
     self.create(code, msg, details)
 
   def create(self, code: int, msg: str, details: dict = {}):
-    self.set_code(-1)
+    self.set_code(code)
     self.set_message(msg)
     self.set_stack(details)
 
