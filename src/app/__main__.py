@@ -19,7 +19,7 @@ env = {
 env.setdefault("PDNS_API_KEY", "")
 env.setdefault("PDNS_API_VERSION", "4.8.4")
 env.setdefault("DNSMASQ_DOMAIN", canonical_dns_name("localhost.test"))
-env.setdefault("DNSUPDATE_ZONE_PTR", canonical_dns_name("in-addr.arpa"))
+env.setdefault("DNSUPDATE_ZONE_PTR", None)
 env.setdefault("DNSMASQ_LOG_DHCP", False)
 env.setdefault("DNSMASQ_TAGS", "")
 env.setdefault("DNSMASQ_INTERFACE", "")
@@ -75,8 +75,9 @@ if APP_CONFIG:
   if not (os.path.isfile(APP_CONFIG) and os.access(APP_CONFIG, os.R_OK)):
     print(f"ERROR: The given file path at {APP_CONFIG} does not exist.")
     exit(1)
-  else:
-    print(f"Found configuration file at {APP_CONFIG}")
+  else: 
+    if log_level == "DEBUG":
+        print(f"Found configuration file at {APP_CONFIG}")
     app = AppConfig(APP_CONFIG)
 
 log.debug(f'LOG_LEVEL={log_level}')
@@ -120,8 +121,6 @@ DNSMASQ_LOG_DHCP = \
 if DNSMASQ_LOG_DHCP and bool(DNSMASQ_LOG_DHCP) == True:
     print("Verbose DHCP logging is enabled.")
     log.setLevel(9);
-elif not (DNSMASQ_LOG_DHCP and DNSMASQ_LOG_DHCP == False):
-    print("Verbose DHCP logging has not been requested.")
 
 DNSMASQ_TAGS = \
     env["DNSMASQ_TAGS"]
@@ -152,8 +151,6 @@ DNSMASQ_DOMAIN = \
 # ?? Rename to DNSMASQ_DOMAIN_PTR
 # !! IMPORTANT(JEFF): This is required for the REST endpoint data input for PTR
 # !! zone updates
-DNSUPDATE_ZONE_PTR = \
-  canonical_dns_name(env["DNSUPDATE_ZONE_PTR"])
 
 def main() -> None:
   #args = sys.argv
@@ -175,12 +172,18 @@ def main() -> None:
      DNSUPDATE_ZONE_PTR = canonical_dns_name("13.168.192.in-addr.arpa")
   elif DNSMASQ_DOMAIN == canonical_dns_name("wifi.home.arpa"):
      DNSUPDATE_ZONE_PTR = canonical_dns_name("16.168.192.in-addr.arpa")
-    
+
   log.debug(f'DNSMASQ_DOMAIN={env["DNSMASQ_DOMAIN"]}')
   log.debug(f'DNSUPDATE_ZONE_PTR={env["DNSUPDATE_ZONE_PTR"]}')
-  
+
   # !! FIXME
   assert DNSMASQ_DOMAIN != "None." and DNSMASQ_DOMAIN != "", "DNSMASQ_DOMAIN must be set"
+  DNSUPDATE_ZONE_PTR = None
+  if env["DNSUPDATE_ZONE_PTR"] and len(env["DNSUPDATE_ZONE_PTR"]) > 0:
+    DNSUPDATE_ZONE_PTR = \
+      canonical_dns_name(env["DNSUPDATE_ZONE_PTR"])
+  else:
+    DNSUPDATE_ZONE_PTR = None
 
   # !! Required argument
   # >> DNSMASQ may pass DUID made of the link layer *...* instead of
@@ -260,7 +263,8 @@ def main() -> None:
   except ValueError:
     log.critical("CMD must be one of: (ADD|OLD|DEL).")
     exit(EXIT_PARAMS)
-  
+
+  ttl = config["PDNS_API_TTL"]
   # !! Lease registration or renewal
   if CMD == "add" or CMD == "old":
     # >> NOTE(JEFF): The LOG_STR is purely for visual aid in log output
@@ -275,38 +279,42 @@ def main() -> None:
     if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_A_REQUEST:{json.dumps(RR_TYPE_A_REQUEST).encode("utf-8")}')
     else:
-        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
-        print(f'{LOG_STR} Updating A record XXX')
+        print(f'[{LOG_STR}] {FQDN} {ttl} IN A {IP_ADDR} at {PDNS_API_URL}')
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST)
-    print(res.message())
     if res.status_code() != 204:
-        exit(res.status_code())
+        err = FetchError(res.status_code(), res.message(), {})
+        print(f'    {err.message()} with status code {err.status_code()}')
+    else:
+        print(f'{res.status_message()}')
 
     #RRset request(RRType.TXT_RECORD, name=FQDN, content=MAC_ADDR)
     #request.json()
     if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_TXT_REQUEST:{json.dumps(RR_TYPE_TXT_REQUEST).encode("utf-8")}')
     else:
-        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
-        print(f'{LOG_STR} Updating TXT record ...')
+        print(f'[{LOG_STR}] {FQDN} {ttl} IN TXT {IP_ADDR} at {PDNS_API_URL}')
 
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST)
-    print(res.message())
     if res.status_code() != 204:
-        exit(res.status_code())
-
+        err = FetchError(res.status_code(), res.message(), {})
+        print(f'    {err.message()} with status code {err.status_code()}')
+    else:
+        print(f'{res.status_code()}')
     if DNSUPDATE_ZONE_PTR != None:
         #RRset request(RRType.PTR_RECORD, name=RIP, content=FQDN)
         #request.json()
         if bool(DNSMASQ_LOG_DHCP) == True:
             print(f'{LOG_STR} RR_TYPE_PTR_REQUEST:{json.dumps(RR_TYPE_PTR_REQUEST).encode("utf-8")}')
         else:
-            # TODO(JEFF): Improve logging with details (FQDN, IP etc)
-            print(f'{LOG_STR} Updating PTR record XXX')
+            print(f'[{LOG_STR}] {RIP} {ttl} IN PTR {FQDN} at {PDNS_API_URL}')
         res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST)
-        print(res.message())
         if res.status_code() != 204:
-            exit(res.status_code())
+            err = FetchError(res.status_code(), res.message())
+            print(f'    {err.message()} with status code {err.status_code()}')
+        else:
+            print(f'{res.status_code()}')
+    else:
+        print(f'Not updating PTR record because no reverse zone has been specified.')
 
   # !! Lease release
   elif CMD == "del":
@@ -319,13 +327,14 @@ def main() -> None:
     if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_A_REQUEST_DEL:{json.dumps(RR_TYPE_A_REQUEST_DEL).encode("utf-8")}')
     else:
-        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
-        print(f'{LOG_STR} Removing A record XXX')
-    
+        print(f'[{LOG_STR}] {FQDN} {ttl} IN A {IP_ADDR} at {PDNS_API_URL}')
+
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_A_REQUEST_DEL)
-    print(res.status_message())
     if res.status_code() != 204:
-      exit(res.status_code())
+        err = FetchError(res.status_code(), res.message(), {})
+        print(f'    {err.message()} with status code {err.status_code()}')
+    else:
+        print(f'{res.status_message()}')
 
     RR_TYPE_TXT_REQUEST_DEL = RR_TYPE_TXT_REQUEST
     RR_TYPE_TXT_REQUEST_DEL["rrsets"][0]["changetype"] = "DELETE"
@@ -333,13 +342,14 @@ def main() -> None:
     if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_TXT_REQUEST_DEL:{json.dumps(RR_TYPE_TXT_REQUEST_DEL).encode("utf-8")}')
     else:
-        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
-        print(f'{LOG_STR} Removing TXT record XXX')
+        print(f'[{LOG_STR}] {FQDN} {ttl} IN TXT {IP_ADDR} at {PDNS_API_URL}')
 
     res = update_record(url = FULL_REQUEST_URL, zone = DNSMASQ_DOMAIN, api_key = PDNS_API_KEY, json_data = RR_TYPE_TXT_REQUEST_DEL)
-    print(res.status_message())
     if res.status_code() != 204:
-      exit(res.status_code())
+        err = FetchError(res.status_code(), res.message(), {})
+        print(f'    {err.message()} with status code {err.status_code()}')
+    else:
+        print(f'{res.status_message()}')
 
     if DNSUPDATE_ZONE_PTR != None:
       RR_TYPE_PTR_REQUEST_DEL = RR_TYPE_PTR_REQUEST
@@ -348,11 +358,14 @@ def main() -> None:
       if bool(DNSMASQ_LOG_DHCP) == True:
         print(f'{LOG_STR} RR_TYPE_PTR_REQUEST_DEL:{json.dumps(RR_TYPE_PTR_REQUEST_DEL).encode("utf-8")}')
       else:
-        # TODO(JEFF): Improve logging with details (FQDN, IP etc)
-        print(f'{LOG_STR} Removing PTR record XXX')
+        print(f'[{LOG_STR}] {RIP} {ttl} IN PTR {FQDN} at {PDNS_API_URL}')
 
       res = update_record(url = FULL_REQUEST_URL, zone = DNSUPDATE_ZONE_PTR, api_key = PDNS_API_KEY, json_data = RR_TYPE_PTR_REQUEST_DEL)
-      print(res.status_message())
       if res.status_code() != 204:
-        exit(res.status_code())
+        err = FetchError(res.status_code(), res.message(), {})
+        print(f'    {err.message()} with status code {err.status_code()}')
+      else:
+        print(f'{res.status_message()}')
+    else:
+        print(f'Not removing PTR record because no reverse zone has been specified.')
 
