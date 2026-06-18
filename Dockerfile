@@ -3,19 +3,43 @@
 # Base build environment
 #
 
+####
 FROM python:3.14-slim-trixie
 LABEL maintainer="Jeffrey Carpenter <1329364+i8degrees@users.noreply.github.com>"
+
+###
 
 ARG VERSION=1.1.1
 #USER root
 #WORKDIR /
 #apk add --no-cache
 
+###
+
 USER root
 WORKDIR /
-RUN apt-get update && apt-get install dnsmasq python3-venv git -y
+RUN set -eux \
+    && dpkg --add-architecture amd64 \
+    && DEBIAN_FRONTEND=noninteractive apt-get update -qq \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends --no-install-suggests \
+    bash \
+    bzip2 \
+    curl \
+    diffutils \
+    dnsmasq \
+    file \
+    git \
+    make \
+    patch \
+    python3-venv \
+    unzip \
+    zip \
+    zstd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-#
+###
+
 RUN mkdir /app /app/dist
 COPY .env.dist /app
 #COPY .env /app/.env
@@ -25,6 +49,8 @@ COPY config/ /app/config
 COPY scripts/ /app/scripts
 COPY src/ /app/src
 COPY templates/ /app/templates
+###
+
 #USER app
 WORKDIR /app
 
