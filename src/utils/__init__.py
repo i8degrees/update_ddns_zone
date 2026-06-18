@@ -13,7 +13,6 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 # !! This is applicable only when the end-user imports the module with the `*`
 # syntax; `from utils import *`
 __all__ = [
-  'EXIT_PARAMS',
   'parse_boolean',
   'reverse_ip',
   'update_record',

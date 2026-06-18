@@ -6,7 +6,6 @@
 
 from collections import namedtuple
 from enum import Enum
-import errno
 import json
 import os
 import urllib3
@@ -28,11 +27,6 @@ env.setdefault("DEBUG_TRACE", "")
 env.setdefault("VERBOSE", "")
 env.setdefault("SYSLOG", "")
 env.setdefault("PDNS_API_VERSION", "4.8.4")
-
-EXIT_SUCCESS = int(0)
-EXIT_PARAMS: int = errno.EINVAL
-#EXIT_BAD_REQUEST = errno.
-#EXIT_UNPROCESSIBLE_REQUEST = errno.
 
 log = logging.getLogger(__name__)
 

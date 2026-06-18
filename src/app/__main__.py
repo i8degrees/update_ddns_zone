@@ -70,11 +70,10 @@ if not isinstance(numeric_log_level, int):
 log.setLevel(numeric_log_level)
 
 APP_CONFIG = args.config
-
 if APP_CONFIG:
   if not (os.path.isfile(APP_CONFIG) and os.access(APP_CONFIG, os.R_OK)):
     print(f"ERROR: The given file path at {APP_CONFIG} does not exist.")
-    exit(1)
+    exit(errno.ENOENT) # No such file or directory
   else: 
     if log_level == "DEBUG":
         print(f"Found configuration file at {APP_CONFIG}")
@@ -262,7 +261,7 @@ def main() -> None:
       raise ValueError
   except ValueError:
     log.critical("CMD must be one of: (ADD|OLD|DEL).")
-    exit(EXIT_PARAMS)
+    exit(errno.EINVAL) # 22 Invalid argument
 
   ttl = config["PDNS_API_TTL"]
   # !! Lease registration or renewal
