@@ -299,7 +299,7 @@ def main() -> None:
         err = FetchError(res.status_code(), res.message(), {})
         print(f'    {err.message()} with status code {err.status_code()}')
     else:
-        print(f'{res.status_code()}')
+        print(f'{res.status_message()}')
     if DNSUPDATE_ZONE_PTR != None:
         #RRset request(RRType.PTR_RECORD, name=RIP, content=FQDN)
         #request.json()
@@ -312,7 +312,7 @@ def main() -> None:
             err = FetchError(res.status_code(), res.message())
             print(f'    {err.message()} with status code {err.status_code()}')
         else:
-            print(f'{res.status_code()}')
+            print(f'{res.status_message()}')
     else:
         print(f'Not updating PTR record because no reverse zone has been specified.')
 
